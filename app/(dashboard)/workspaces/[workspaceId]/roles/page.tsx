@@ -11,6 +11,7 @@ import { PageSkeleton } from "@/components/common/loading-skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { usePermissions, useWorkspace, useWorkspaceRoles } from "@/hooks/queries"
+import { AccessDeniedCard, RequirePermission } from "@/components/common/require-permission"
 
 export default function WorkspaceRolesPage() {
   const params = useParams()
@@ -46,6 +47,15 @@ export default function WorkspaceRolesPage() {
 
   return (
     <DashboardShell>
+      <RequirePermission
+        permission="members.manage"
+        fallback={
+          <AccessDeniedCard
+            title="مدیریت نقش‌ها محدود است"
+            description="فقط مالک و مدیر می‌توانند ماتریس نقش‌ها را ببینند."
+          />
+        }
+      >
       <PageHeader
         title="نقش‌ها و مجوزها"
         description="پیکربندی سطح دسترسی اعضای فضای کاری"
@@ -57,7 +67,7 @@ export default function WorkspaceRolesPage() {
         actions={<ExportMenu entityName="ماتریس نقش‌ها" label="خروجی ماتریس" />}
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {(roles.data ?? []).map((role) => (
           <Card key={role.id}>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -82,6 +92,7 @@ export default function WorkspaceRolesPage() {
         roles={roles.data ?? []}
         permissions={permissions.data ?? []}
       />
+      </RequirePermission>
     </DashboardShell>
   )
 }

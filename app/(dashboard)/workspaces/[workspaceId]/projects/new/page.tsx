@@ -16,6 +16,7 @@ import {
   useProjectCategories,
   useWorkspace,
 } from "@/hooks/queries"
+import { AccessDeniedCard, RequirePermission } from "@/components/common/require-permission"
 
 export default function NewProjectPage() {
   const params = useParams()
@@ -67,6 +68,15 @@ export default function NewProjectPage() {
 
   return (
     <DashboardShell>
+      <RequirePermission
+        permission="projects.create"
+        fallback={
+          <AccessDeniedCard
+            title="ایجاد پروژه مجاز نیست"
+            description="نقش شما اجازه ساخت پروژه جدید را ندارد."
+          />
+        }
+      >
       <PageHeader
         title="پروژه جدید"
         description="ایجاد پروژه جدید در این فضای کاری"
@@ -84,6 +94,7 @@ export default function NewProjectPage() {
         onSubmit={handleSubmit}
         onCancel={() => router.push(`/workspaces/${workspaceId}/projects`)}
       />
+      </RequirePermission>
     </DashboardShell>
   )
 }

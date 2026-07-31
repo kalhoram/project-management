@@ -11,7 +11,17 @@ npm run dev
 
 [http://localhost:3000](http://localhost:3000) را در مرورگر باز کنید.
 
-**ورود آزمایشی:** `alex@teamblue.app` — هر رمز عبور غیرخالی (احراز هویت mock).
+**ورود آزمایشی (۵ نقش):** رمز همه `demo`
+
+| نقش | ایمیل |
+|------|--------|
+| مالک | `owner@yadbox.app` |
+| مدیر | `admin@yadbox.app` |
+| عضو | `member@yadbox.app` |
+| مهمان | `guest@yadbox.app` |
+| بیننده | `viewer@yadbox.app` |
+
+در صفحه `/login` می‌توانید با یک کلیک وارد هر اکانت شوید. منو و دکمه‌ها بر اساس نقش فیلتر می‌شوند.
 
 ---
 
@@ -30,8 +40,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Demo credentials
 
-- Email: `alex@teamblue.app`
-- Password: any non-empty value (mock auth)
+Password for all: `demo`
+
+| Role | Email |
+|------|--------|
+| Owner | `owner@yadbox.app` |
+| Admin | `admin@yadbox.app` |
+| Member | `member@yadbox.app` |
+| Guest | `guest@yadbox.app` |
+| Viewer | `viewer@yadbox.app` |
+
+Click any account on `/login` to sign in. Sidebar and actions are filtered by role permissions.
 
 ## Architecture
 

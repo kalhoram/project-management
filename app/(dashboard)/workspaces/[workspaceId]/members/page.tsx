@@ -46,7 +46,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useWorkspace, useWorkspaceMembers } from "@/hooks/queries"
+import { useWorkspace, useWorkspaceMembers, useCurrentUser } from "@/hooks/queries"
+import { AccessDeniedCard, RequirePermission } from "@/components/common/require-permission"
+import { userHasPermission } from "@/lib/permissions"
 import type { WorkspaceRole } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 
@@ -89,6 +91,9 @@ export default function WorkspaceMembersPage() {
   const workspaceId = params.workspaceId as string
   const workspace = useWorkspace(workspaceId)
   const members = useWorkspaceMembers(workspaceId)
+  const { data: currentUser } = useCurrentUser()
+  const canInvite = userHasPermission(currentUser, "members.invite")
+  const canManageMembers = userHasPermission(currentUser, "members.manage")
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState("")
@@ -120,6 +125,15 @@ export default function WorkspaceMembersPage() {
 
   return (
     <DashboardShell>
+      <RequirePermission
+        permission="members.invite"
+        fallback={
+          <AccessDeniedCard
+            title="مدیریت اعضا محدود است"
+            description="فقط مالک و مدیر می‌توانند اعضا را ببینند و دعوت کنند."
+          />
+        }
+      >
       <PageHeader
         title="اعضا"
         description="مدیریت اعضا و دعوت‌نامه‌های فضای کاری"
@@ -129,10 +143,12 @@ export default function WorkspaceMembersPage() {
           { label: "اعضا" },
         ]}
         actions={
-          <Button onClick={() => setInviteOpen(true)}>
-            <UserPlus className="h-4 w-4" />
-            دعوت عضو
-          </Button>
+          canInvite ? (
+            <Button onClick={() => setInviteOpen(true)}>
+              <UserPlus className="h-4 w-4" />
+              دعوت عضو
+            </Button>
+          ) : null
         }
       />
 
@@ -159,8 +175,8 @@ export default function WorkspaceMembersPage() {
           icon={UserPlus}
           title="عضوی یافت نشد"
           description={search ? "عبارت جستجوی دیگری امتحان کنید." : "اولین عضو تیم را دعوت کنید."}
-          actionLabel="دعوت عضو"
-          onAction={() => setInviteOpen(true)}
+          actionLabel={canInvite ? "دعوت عضو" : undefined}
+          onAction={canInvite ? () => setInviteOpen(true) : undefined}
         />
       ) : null}
 
@@ -212,22 +228,24 @@ export default function WorkspaceMembersPage() {
                     {member.lastActiveAt ? formatDate(member.lastActiveAt) : "—"}
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>تغییر نقش</DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => setRemoveId(member.id)}
-                        >
-                          حذف عضو
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {canManageMembers ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon-sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>تغییر نقش</DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setRemoveId(member.id)}
+                          >
+                            حذف عضو
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}
@@ -295,6 +313,7 @@ export default function WorkspaceMembersPage() {
         variant="destructive"
         onConfirm={handleRemove}
       />
+      </RequirePermission>
     </DashboardShell>
   )
 }

@@ -1,16 +1,39 @@
 import { delay } from "@/lib/utils"
-import { currentUser, mockUsers, mockSessions } from "@/lib/mock/data"
+import { currentUser as defaultUser, mockUsers, mockSessions } from "@/lib/mock/data"
+import {
+  clearSessionUserId,
+  getSessionUserId,
+  setSessionUserId,
+} from "@/lib/auth-session"
 import type { User, Session } from "@/lib/types"
 
 const MOCK_LATENCY = 350
 
-export async function login(email: string, _password: string): Promise<User> {
+function resolveUser(userId: string | null): User {
+  if (userId) {
+    const found = mockUsers.find((u) => u.id === userId)
+    if (found) return found
+  }
+  return defaultUser
+}
+
+export async function login(email: string, password: string): Promise<User> {
   await delay(MOCK_LATENCY)
-  const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
-  if (!user) {
+  if (!password) {
     throw new Error("Invalid email or password")
   }
+  const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
+  if (!user || user.status === "suspended") {
+    throw new Error("Invalid email or password")
+  }
+  setSessionUserId(user.id)
   return user
+}
+
+export async function logout(): Promise<{ success: boolean }> {
+  await delay(150)
+  clearSessionUserId()
+  return { success: true }
 }
 
 export async function signup(data: {
@@ -27,6 +50,7 @@ export async function signup(data: {
     name: data.name,
     email: data.email,
     status: "active",
+    role: "member",
     createdAt: new Date().toISOString(),
   }
 }
@@ -63,7 +87,7 @@ export async function verifyTwoFactor(_code: string): Promise<{ success: boolean
 
 export async function getCurrentUser(): Promise<User> {
   await delay(200)
-  return currentUser
+  return resolveUser(getSessionUserId())
 }
 
 export async function connectGoogle(attempt = 1): Promise<{ success: boolean }> {
@@ -87,7 +111,8 @@ export async function revokeSession(sessionId: string): Promise<{ success: boole
 
 export async function updateProfile(data: Partial<User>): Promise<User> {
   await delay(300)
-  return { ...currentUser, ...data }
+  const user = resolveUser(getSessionUserId())
+  return { ...user, ...data }
 }
 
 export async function changePassword(

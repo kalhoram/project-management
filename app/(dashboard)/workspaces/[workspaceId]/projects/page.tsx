@@ -22,11 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  useCurrentUser,
   useProjectCategories,
   useProjects,
   useWorkspace,
 } from "@/hooks/queries"
 import { PROJECT_STATUS_LABELS } from "@/lib/constants"
+import { userHasPermission } from "@/lib/permissions"
 import type { ProjectStatus, ProjectVisibility } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -45,6 +47,9 @@ export default function ProjectsPage() {
   const workspace = useWorkspace(workspaceId)
   const projects = useProjects(workspaceId)
   const categories = useProjectCategories(workspaceId)
+  const { data: currentUser } = useCurrentUser()
+  const canCreateProject = userHasPermission(currentUser, "projects.create")
+  const canManageProjects = userHasPermission(currentUser, "projects.manage")
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all")
@@ -81,24 +86,30 @@ export default function ProjectsPage() {
         ]}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/workspaces/${workspaceId}/projects/archived`}>
-                <Archive className="h-4 w-4" />
-                بایگانی‌شده
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/workspaces/${workspaceId}/projects/deleted`}>
-                <Trash2 className="h-4 w-4" />
-                حذف‌شده
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href={`/workspaces/${workspaceId}/projects/new`}>
-                <Plus className="h-4 w-4" />
-                پروژه جدید
-              </Link>
-            </Button>
+            {canManageProjects ? (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/workspaces/${workspaceId}/projects/archived`}>
+                    <Archive className="h-4 w-4" />
+                    بایگانی‌شده
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/workspaces/${workspaceId}/projects/deleted`}>
+                    <Trash2 className="h-4 w-4" />
+                    حذف‌شده
+                  </Link>
+                </Button>
+              </>
+            ) : null}
+            {canCreateProject ? (
+              <Button asChild>
+                <Link href={`/workspaces/${workspaceId}/projects/new`}>
+                  <Plus className="h-4 w-4" />
+                  پروژه جدید
+                </Link>
+              </Button>
+            ) : null}
           </div>
         }
       />
@@ -195,10 +206,16 @@ export default function ProjectsPage() {
           description={
             search
               ? "جستجو یا فیلترها را تغییر دهید."
-              : "اولین پروژه را بسازید تا کار را پیگیری کنید."
+              : canCreateProject
+                ? "اولین پروژه را بسازید تا کار را پیگیری کنید."
+                : "نقشی برای ایجاد پروژه ندارید."
           }
-          actionLabel="ایجاد پروژه"
-          onAction={() => router.push(`/workspaces/${workspaceId}/projects/new`)}
+          actionLabel={canCreateProject ? "ایجاد پروژه" : undefined}
+          onAction={
+            canCreateProject
+              ? () => router.push(`/workspaces/${workspaceId}/projects/new`)
+              : undefined
+          }
         />
       ) : null}
 

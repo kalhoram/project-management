@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { CreditCard, LogOut, Moon, Settings, User } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,12 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useCurrentUser } from "@/hooks/queries"
+import { useCurrentUser, useLogout } from "@/hooks/queries"
+import { getRoleLabel, userHasPermission } from "@/lib/permissions"
 
 export function UserMenu() {
   const router = useRouter()
   const { setTheme, theme } = useTheme()
   const { data: user } = useCurrentUser()
+  const logout = useLogout()
   const initials =
     user?.name
       ?.split(" ")
@@ -27,6 +30,12 @@ export function UserMenu() {
       .join("")
       .slice(0, 2)
       .toUpperCase() ?? "U"
+  const canBilling = userHasPermission(user, "billing.manage")
+
+  async function handleLogout() {
+    await logout.mutateAsync()
+    router.push("/login")
+  }
 
   return (
     <DropdownMenu>
@@ -39,11 +48,16 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <span>{user?.name ?? "کاربر"}</span>
             <span className="text-xs font-normal text-muted-foreground">
               {user?.email ?? ""}
             </span>
+            {user?.role ? (
+              <Badge variant="secondary" className="mt-1 w-fit">
+                {getRoleLabel(user.role)}
+              </Badge>
+            ) : null}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -59,12 +73,14 @@ export function UserMenu() {
             تنظیمات حساب
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/billing/subscription">
-            <CreditCard className="h-4 w-4" />
-            اشتراک
-          </Link>
-        </DropdownMenuItem>
+        {canBilling ? (
+          <DropdownMenuItem asChild>
+            <Link href="/billing/subscription">
+              <CreditCard className="h-4 w-4" />
+              اشتراک
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
@@ -72,7 +88,7 @@ export function UserMenu() {
           تغییر پوسته
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/login")}>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           خروج
         </DropdownMenuItem>

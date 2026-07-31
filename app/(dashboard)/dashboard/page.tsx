@@ -26,7 +26,9 @@ import {
   useOverdueTasks,
   useUpcomingDeadlines,
 } from "@/hooks/queries"
+import { Badge } from "@/components/ui/badge"
 import { STATUS_COLORS, TASK_STATUS_LABELS } from "@/lib/constants"
+import { getRoleLabel, listUserPermissions } from "@/lib/permissions"
 import { formatDate } from "@/lib/utils"
 
 const statusChartData = [
@@ -82,6 +84,36 @@ export default function DashboardPage() {
         description={`خوش آمدید، ${user.data?.name?.split(" ")[0] ?? "دوست عزیز"}`}
         actions={<ExportMenu entityName="داشبورد" />}
       />
+
+      <Card className="mb-6 shadow-none">
+        <CardHeader className="pb-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle className="text-base font-semibold">نقش و دسترسی شما</CardTitle>
+            {user.data?.role ? (
+              <Badge variant="default">{getRoleLabel(user.data.role)}</Badge>
+            ) : null}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {user.data?.email} — منوی کناری و دکمه‌ها بر اساس این نقش فیلتر می‌شوند. برای مقایسه، از صفحه
+            ورود اکانت دیگری را انتخاب کنید.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {listUserPermissions(user.data).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              این نقش مجوز عملیاتی ندارد (فقط داشبورد و بخش‌های عمومی).
+            </p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {listUserPermissions(user.data).map((perm) => (
+                <Badge key={perm.key} variant="secondary">
+                  {perm.label}
+                </Badge>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="وظایف باز" value={m.openTasks} change="۳+ این هفته" trend="up" />

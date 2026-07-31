@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import * as workspaceService from "@/lib/api/workspace.service"
 import * as projectService from "@/lib/api/project.service"
 import * as taskService from "@/lib/api/task.service"
@@ -14,13 +14,31 @@ import * as authService from "@/lib/api/auth.service"
 import * as advancedService from "@/lib/api/advanced.service"
 
 export function useCurrentUser() {
-  return useQuery({ queryKey: ["currentUser"], queryFn: authService.getCurrentUser })
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: authService.getCurrentUser,
+    staleTime: 0,
+  })
 }
 
 export function useLogin() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authService.login(email, password),
+    onSuccess: (user) => {
+      queryClient.setQueryData(["currentUser"], user)
+    },
+  })
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => authService.logout(),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["currentUser"] })
+    },
   })
 }
 
