@@ -1,26 +1,217 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
+  /* YadBox / یادباکس — light */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #172b4d;
+  --card: #ffffff;
+  --card-foreground: #172b4d;
+  --popover: #ffffff;
+  --popover-foreground: #172b4d;
+  --primary: #0052cc;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f5f7;
+  --secondary-foreground: #172b4d;
+  --muted: #f4f5f7;
+  --muted-foreground: #6b778c;
+  --accent: #ebecf0;
+  --accent-foreground: #172b4d;
+  --destructive: #de350b;
+  --destructive-foreground: #ffffff;
+  --success: #00875a;
+  --success-foreground: #ffffff;
+  --warning: #ff991f;
+  --warning-foreground: #172b4d;
+  --info: #00b8d9;
+  --info-foreground: #172b4d;
+  --purple: #6554c0;
+  --purple-foreground: #ffffff;
+  --border: #dfe1e6;
+  --input: #dfe1e6;
+  --ring: #0052cc;
+  --sidebar: #fafbfc;
+  --sidebar-foreground: #6b778c;
+  --sidebar-primary: #0052cc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2e8f5;
+  --sidebar-accent-foreground: #0052cc;
+  --sidebar-border: #dfe1e6;
+  --sidebar-ring: #0052cc;
+  --surface: #ebecf0;
+  --neutral: #f4f5f7;
+  --chart-1: #0052cc;
+  --chart-2: #00b8d9;
+  --chart-3: #00875a;
+  --chart-4: #ff991f;
+  --chart-5: #6554c0;
+  --radius: 0.1875rem;
+  --shadow-1: 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+  --shadow-2: 0 4px 8px -2px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+  --shadow-3: 0 8px 16px -4px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+}
+
+.dark {
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --card-foreground: #e6edf3;
+  --popover: #161b22;
+  --popover-foreground: #e6edf3;
+  --primary: #4c9aff;
+  --primary-foreground: #0d1117;
+  --secondary: #21262d;
+  --secondary-foreground: #e6edf3;
+  --muted: #21262d;
+  --muted-foreground: #8b949e;
+  --accent: #30363d;
+  --accent-foreground: #e6edf3;
+  --destructive: #f85149;
+  --destructive-foreground: #ffffff;
+  --success: #3fb950;
+  --success-foreground: #0d1117;
+  --warning: #d29922;
+  --warning-foreground: #0d1117;
+  --info: #39c5cf;
+  --info-foreground: #0d1117;
+  --purple: #a371f7;
+  --purple-foreground: #0d1117;
+  --border: #30363d;
+  --input: #30363d;
+  --ring: #4c9aff;
+  --sidebar: #010409;
+  --sidebar-foreground: #8b949e;
+  --sidebar-primary: #4c9aff;
+  --sidebar-primary-foreground: #0d1117;
+  --sidebar-accent: #1c2128;
+  --sidebar-accent-foreground: #4c9aff;
+  --sidebar-border: #30363d;
+  --sidebar-ring: #4c9aff;
+  --surface: #21262d;
+  --neutral: #161b22;
+  --chart-1: #4c9aff;
+  --chart-2: #39c5cf;
+  --chart-3: #3fb950;
+  --chart-4: #d29922;
+  --chart-5: #a371f7;
+  --shadow-1: 0 1px 1px rgba(1, 4, 9, 0.5), 0 0 1px rgba(1, 4, 9, 0.6);
+  --shadow-2: 0 4px 8px -2px rgba(1, 4, 9, 0.5), 0 0 1px rgba(1, 4, 9, 0.6);
+  --shadow-3: 0 8px 16px -4px rgba(1, 4, 9, 0.5), 0 0 1px rgba(1, 4, 9, 0.6);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-purple: var(--purple);
+  --color-purple-foreground: var(--purple-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-surface: var(--surface);
+  --color-neutral: var(--neutral);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
+  --font-sans: "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Vazirmatn", ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    font-family: "Vazirmatn", ui-sans-serif, system-ui, sans-serif !important;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp,
+  .font-mono {
+    font-family: "Vazirmatn", ui-monospace, monospace !important;
+  }
+
+  body {
+    @apply bg-background text-foreground text-sm antialiased;
+    font-family: "Vazirmatn", ui-sans-serif, system-ui, sans-serif !important;
+    line-height: 1.7;
+  }
+
+  html {
+    direction: rtl;
+    font-family: "Vazirmatn", ui-sans-serif, system-ui, sans-serif !important;
+  }
+
+  h1 {
+    @apply text-[35px] font-bold tracking-[-0.02em] text-foreground;
+  }
+
+  h2 {
+    @apply text-[29px] font-bold tracking-[-0.02em] text-foreground;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold tracking-[-0.02em] text-foreground;
+  }
+
+  h4 {
+    @apply text-xl font-semibold tracking-[-0.02em] text-foreground;
+  }
+
+  h5 {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  .overline {
+    @apply text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .shadow-level-1 {
+    box-shadow: var(--shadow-1);
+  }
+  .shadow-level-2 {
+    box-shadow: var(--shadow-2);
+  }
+  .shadow-level-3 {
+    box-shadow: var(--shadow-3);
+  }
+  .lozenge {
+    @apply inline-flex h-5 items-center rounded-sm px-1 text-[11px] font-bold tracking-wide;
+  }
 }

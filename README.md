@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# یادباکس (YadBox)
 
-## Getting Started
+رابط کاربری SaaS مدیریت پروژه — الهام‌گرفته از Asana، Trello، Linear و ClickUp. ساخته‌شده با Next.js App Router، TypeScript، Tailwind CSS، shadcn/ui، TanStack Query/Table، Zustand، dnd-kit، React Hook Form، Zod و Recharts.
 
-First, run the development server:
+## شروع سریع
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) را در مرورگر باز کنید.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**ورود آزمایشی:** `alex@teamblue.app` — هر رمز عبور غیرخالی (احراز هویت mock).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+Frontend-only project management SaaS UI inspired by Asana, Trello, Linear, and ClickUp. Built with Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query/Table, Zustand, dnd-kit, React Hook Form, Zod, and Recharts.
 
-To learn more about Next.js, take a look at the following resources:
+Visual system follows [`design.md`](./design.md) (YadBox): Atlassian blue primary, Inter typography, compact density, sharp radii, lozenge status badges.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Quick start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Demo credentials
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Email: `alex@teamblue.app`
+- Password: any non-empty value (mock auth)
+
+## Architecture
+
+```txt
+app/                  # App Router routes (auth, onboarding, dashboard, admin, billing)
+components/
+  ui/                 # shadcn primitives
+  layout/             # App shell, sidebars, switchers, command palette
+  common/             # Empty/error/loading, badges, tables helpers
+  features/           # Kanban, list, calendar, tasks, projects, reports
+lib/
+  api/                # API-ready mock services (swap for FastAPI later)
+  mock/               # Typed mock datasets
+  types/              # Shared TypeScript models
+hooks/queries/        # TanStack Query hooks
+stores/               # Zustand UI + workspace state
+```
+
+## Key routes
+
+| Area | Examples |
+|------|----------|
+| Auth | `/login`, `/signup`, `/forgot-password`, `/two-factor` |
+| Onboarding | `/onboarding`, `/onboarding/workspace`, `/onboarding/templates` |
+| App | `/dashboard`, `/workspaces`, `/workspaces/[id]/projects` |
+| Views | `.../kanban`, `.../list`, `.../calendar`, `.../timeline`, `.../gantt` |
+| Billing | `/billing/plans`, `/billing/subscription`, `/billing/invoices` |
+| Admin | `/admin`, `/admin/users`, `/admin/logs` |
+| Settings | `/settings/profile`, `/settings/appearance` |
+
+## Notes
+
+- No backend: all data comes from `lib/api/*` mock services with artificial latency.
+- Dark mode: theme toggle in user menu / appearance settings (`next-themes`).
+- Command palette: `⌘K` / `Ctrl+K`.
+- Replace mock services with real FastAPI clients without changing page components.
