@@ -1,9 +1,11 @@
 "use client"
 
+import { Gauge } from "lucide-react"
 import { useParams } from "next/navigation"
 import { DashboardShell } from "@/components/layout/dashboard-shell"
 import { PageHeader } from "@/components/common/page-header"
 import { ExportMenu } from "@/components/common/export-menu"
+import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { PageSkeleton } from "@/components/common/loading-skeleton"
 import { BarChartCard } from "@/components/features/reports/report-chart-card"
@@ -17,6 +19,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useCapacity, useWorkspace } from "@/hooks/queries"
+import { lookupUser } from "@/lib/user-registry"
+
+function memberLabel(userId: string, mappedName?: string) {
+  if (mappedName && mappedName !== "عضو تیم") return mappedName
+  return lookupUser(userId)?.name ?? mappedName ?? "عضو تیم"
+}
 
 export default function CapacityPage() {
   const params = useParams()
@@ -25,23 +33,52 @@ export default function CapacityPage() {
   const capacity = useCapacity(workspaceId)
 
   if (workspace.isLoading || capacity.isLoading) {
-    return <DashboardShell><PageSkeleton /></DashboardShell>
+    return (
+      <DashboardShell>
+        <PageSkeleton />
+      </DashboardShell>
+    )
   }
 
   if (capacity.isError) {
     return (
       <DashboardShell>
-        <ErrorState onRetry={() => capacity.refetch()} />
+        <ErrorState
+          message="بارگذاری داده ظرفیت تیم ممکن نشد."
+          onRetry={() => capacity.refetch()}
+        />
       </DashboardShell>
     )
   }
 
   const items = capacity.data ?? []
-  const chartData = items.map((m) => ({
-    name: m.name.split(" ")[0],
-    value: m.utilization,
-    fill: m.utilization > 90 ? "#DE350B" : m.utilization > 75 ? "#FF991F" : "#00875A",
-  }))
+
+  if (items.length === 0) {
+    return (
+      <DashboardShell>
+        <PageHeader
+          title="ظرفیت"
+          description="بهره‌وری و دسترس‌پذیری تیم"
+          actions={<ExportMenu entityName="ظرفیت" />}
+        />
+        <EmptyState
+          icon={Gauge}
+          title="داده ظرفیتی ثبت نشده"
+          description="برنامه ظرفیت هفتگی اعضا پس از تنظیم در اینجا نمایش داده می‌شود."
+        />
+      </DashboardShell>
+    )
+  }
+
+  const chartData = items.map((member) => {
+    const utilization = member.utilization ?? 0
+    const label = memberLabel(member.userId, member.name)
+    return {
+      name: label.split(" ")[0] ?? label,
+      value: utilization,
+      fill: utilization > 90 ? "#DE350B" : utilization > 75 ? "#FF991F" : "#00875A",
+    }
+  })
 
   return (
     <DashboardShell>
@@ -52,7 +89,11 @@ export default function CapacityPage() {
       />
 
       <div className="mb-4">
-        <BarChartCard title="بهره‌وری بر اساس عضو" description="درصد ظرفیت هفتگی" data={chartData} />
+        <BarChartCard
+          title="بهره‌وری بر اساس عضو"
+          description="درصد ظرفیت هفتگی"
+          data={chartData}
+        />
       </div>
 
       <div className="rounded-sm border border-border">
@@ -67,15 +108,21 @@ export default function CapacityPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((member) => (
-              <TableRow key={member.userId}>
-                <TableCell className="font-medium">{member.name}</TableCell>
-                <TableCell>{member.allocatedHours}س</TableCell>
-                <TableCell>{member.availableHours}س</TableCell>
-                <TableCell>{member.utilization}٪</TableCell>
-                <TableCell><Progress value={member.utilization} /></TableCell>
-              </TableRow>
-            ))}
+            {items.map((member) => {
+              const utilization = member.utilization ?? 0
+              const name = memberLabel(member.userId, member.name)
+              return (
+                <TableRow key={member.userId}>
+                  <TableCell className="font-medium">{name}</TableCell>
+                  <TableCell>{member.allocatedHours ?? 0}س</TableCell>
+                  <TableCell>{member.availableHours ?? 0}س</TableCell>
+                  <TableCell>{utilization}٪</TableCell>
+                  <TableCell>
+                    <Progress value={utilization} />
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>

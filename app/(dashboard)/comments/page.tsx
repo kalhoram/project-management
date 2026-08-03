@@ -9,7 +9,8 @@ import { PageSkeleton } from "@/components/common/loading-skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useComments } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 function initials(name: string) {
@@ -22,7 +23,8 @@ const entityTypeLabels: Record<string, string> = {
 }
 
 export default function CommentsPage() {
-  const comments = useComments()
+  const { currentWorkspaceId } = useWorkspaceStore()
+  const comments = useComments(currentWorkspaceId ?? "")
 
   if (comments.isLoading) return <DashboardShell><PageSkeleton /></DashboardShell>
   if (comments.isError) {
@@ -38,12 +40,14 @@ export default function CommentsPage() {
   return (
     <DashboardShell>
       <PageHeader title="نظرات" description="نظرات اخیر در وظایف و پروژه‌ها" />
-      {items.length === 0 ? (
+      {!currentWorkspaceId ? (
+        <EmptyState title="فضای کاری انتخاب نشده" description="برای مشاهده نظرات یک فضای کاری انتخاب کنید." />
+      ) : items.length === 0 ? (
         <EmptyState icon={MessageSquare} title="هنوز نظری ثبت نشده" description="نظرات اینجا نمایش داده می‌شوند." />
       ) : (
         <ul className="space-y-3">
           {items.map((comment) => {
-            const author = mockUsers.find((u) => u.id === comment.authorId)
+            const author = lookupUser(comment.authorId)
             return (
               <li key={comment.id} className="rounded-sm border border-border bg-card p-4">
                 <div className="flex items-start gap-3">
@@ -52,7 +56,7 @@ export default function CommentsPage() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{author?.name}</span>
+                      <span className="text-sm font-medium">{author?.name ?? "ناشناس"}</span>
                       <Badge variant="secondary">{entityTypeLabels[comment.entityType] ?? comment.entityType}</Badge>
                       <span className="text-xs text-muted-foreground">
                         {formatDate(comment.createdAt, "MMM d, yyyy h:mm a")}
@@ -61,7 +65,8 @@ export default function CommentsPage() {
                     <p className="mt-2 text-sm">{comment.body}</p>
                     {comment.mentions.length > 0 ? (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        منشن‌ها: {comment.mentions.map((id) => mockUsers.find((u) => u.id === id)?.name).join("، ")}
+                        منشن‌ها:{" "}
+                        {comment.mentions.map((id) => lookupUser(id)?.name ?? id).join("، ")}
                       </p>
                     ) : null}
                   </div>

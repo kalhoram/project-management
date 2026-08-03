@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useWorkspace, useWorkspaceTeams } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 
 export default function WorkspaceTeamsPage() {
   const params = useParams()
@@ -66,7 +66,7 @@ export default function WorkspaceTeamsPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(teams.data ?? []).map((team) => {
-            const lead = mockUsers.find((u) => u.id === team.leadId)
+            const lead = lookupUser(team.leadId)
             return (
               <Card key={team.id}>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">

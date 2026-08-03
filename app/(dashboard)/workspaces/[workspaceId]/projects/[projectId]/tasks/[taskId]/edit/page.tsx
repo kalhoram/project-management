@@ -26,7 +26,7 @@ export default function EditTaskPage() {
   const workspace = useWorkspace(workspaceId)
   const project = useProject(projectId)
   const task = useTask(taskId)
-  const labels = useLabels()
+  const labels = useLabels(workspaceId)
   const updateTask = useUpdateTask()
 
   const isLoading =

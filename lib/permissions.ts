@@ -19,6 +19,13 @@ export const DEMO_ACCOUNTS: Array<{
   description: string
 }> = [
   {
+    email: "admin",
+    password: "123/321",
+    role: "owner",
+    name: "ادمین سیستم",
+    description: "دسترسی کامل مالک پروژه (user: admin)",
+  },
+  {
     email: "owner@yadbox.app",
     password: "demo",
     role: "owner",

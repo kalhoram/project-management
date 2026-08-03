@@ -121,7 +121,7 @@ function CommentItem({
 
 export function CommentThread({
   comments,
-  currentUserId = "user-1",
+  currentUserId,
   onAddComment,
   className,
 }: CommentThreadProps) {

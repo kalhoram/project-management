@@ -1,14 +1,15 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Download, FileText, Folder, Upload } from "lucide-react"
-import { toast } from "sonner"
+import { FileText, Folder } from "lucide-react"
 import { DashboardShell } from "@/components/layout/dashboard-shell"
 import { PageHeader } from "@/components/common/page-header"
 import { ExportMenu } from "@/components/common/export-menu"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { PageSkeleton } from "@/components/common/loading-skeleton"
+import { FileDownloadButton } from "@/components/features/files/file-download-button"
+import { FileUploadButton } from "@/components/features/files/file-upload-button"
 import { ProjectTabs } from "@/components/features/projects/project-tabs"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,13 +21,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useFolders, useProject, useProjectFiles, useWorkspace } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / 1048576).toFixed(1)} MB`
+  if (bytes < 1024) return `${bytes} بایت`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} کیلوبایت`
+  return `${(bytes / 1048576).toFixed(1)} مگابایت`
 }
 
 export default function ProjectFilesPage() {
@@ -67,10 +68,7 @@ export default function ProjectFilesPage() {
         actions={
           <div className="flex gap-2">
             <ExportMenu entityName="فایل‌ها" />
-            <Button size="sm" onClick={() => toast.success("آپلود شروع شد")}>
-              <Upload className="h-4 w-4" />
-              آپلود
-            </Button>
+            <FileUploadButton workspaceId={workspaceId} projectId={projectId} />
           </div>
         }
       />
@@ -92,8 +90,7 @@ export default function ProjectFilesPage() {
           icon={FileText}
           title="هنوز فایلی نیست"
           description="دارایی‌های طراحی، مشخصات و اسناد این پروژه را آپلود کنید."
-          actionLabel="آپلود فایل"
-          onAction={() => toast.success("آپلود شروع شد")}
+          action={<FileUploadButton workspaceId={workspaceId} projectId={projectId} label="آپلود فایل" />}
         />
       ) : (
         <div className="rounded-sm border border-border">
@@ -118,13 +115,11 @@ export default function ProjectFilesPage() {
                     </div>
                   </TableCell>
                   <TableCell>{formatBytes(file.size)}</TableCell>
-                  <TableCell>{mockUsers.find((u) => u.id === file.uploadedById)?.name}</TableCell>
+                  <TableCell>{lookupUser(file.uploadedById)?.name ?? "—"}</TableCell>
                   <TableCell>v{file.version}</TableCell>
                   <TableCell>{formatDate(file.createdAt)}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon-sm" onClick={() => toast.success("دانلود شروع شد")}>
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    <FileDownloadButton fileId={file.id} filename={file.name} />
                   </TableCell>
                 </TableRow>
               ))}

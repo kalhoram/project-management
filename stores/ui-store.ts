@@ -45,19 +45,25 @@ export const useUIStore = create<UIState>()(
 )
 
 interface WorkspaceState {
-  currentWorkspaceId: string
+  currentWorkspaceId: string | null
   currentProjectId: string | null
-  setCurrentWorkspaceId: (id: string) => void
+  setCurrentWorkspaceId: (id: string | null) => void
   setCurrentProjectId: (id: string | null) => void
+  clearWorkspaceContext: () => void
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
-      currentWorkspaceId: "ws-1",
-      currentProjectId: "proj-1",
-      setCurrentWorkspaceId: (id) => set({ currentWorkspaceId: id }),
+      currentWorkspaceId: null,
+      currentProjectId: null,
+      setCurrentWorkspaceId: (id) =>
+        set((state) => ({
+          currentWorkspaceId: id,
+          currentProjectId: id === state.currentWorkspaceId ? state.currentProjectId : null,
+        })),
       setCurrentProjectId: (id) => set({ currentProjectId: id }),
+      clearWorkspaceContext: () => set({ currentWorkspaceId: null, currentProjectId: null }),
     }),
     { name: "yadbox-workspace" }
   )

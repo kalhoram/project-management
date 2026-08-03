@@ -99,7 +99,13 @@ export default function SprintsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <p className="text-sm text-muted-foreground">{sprint.goal}</p>
-                  <Progress value={(sprint.completedPoints / sprint.committedPoints) * 100} />
+                  <Progress
+                    value={
+                      sprint.committedPoints > 0
+                        ? (sprint.completedPoints / sprint.committedPoints) * 100
+                        : 0
+                    }
+                  />
                   <p className="text-xs text-muted-foreground">
                     {sprint.completedPoints}/{sprint.committedPoints} امتیاز · {formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}
                   </p>
@@ -128,7 +134,7 @@ export default function SprintsPage() {
                     <TableCell className="max-w-xs truncate">{sprint.goal}</TableCell>
                     <TableCell>{formatDate(sprint.startDate)} – {formatDate(sprint.endDate)}</TableCell>
                     <TableCell>{sprint.completedPoints}/{sprint.committedPoints}</TableCell>
-                    <TableCell>{sprint.taskIds.length}</TableCell>
+                    <TableCell>{(sprint.taskIds ?? []).length}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

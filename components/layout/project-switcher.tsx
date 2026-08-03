@@ -18,8 +18,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function ProjectSwitcher() {
   const router = useRouter()
   const { currentWorkspaceId, currentProjectId, setCurrentProjectId } = useWorkspaceStore()
-  const { data: projects, isLoading } = useProjects(currentWorkspaceId)
+  const { data: projects, isLoading } = useProjects(currentWorkspaceId ?? "")
   const current = projects?.find((p) => p.id === currentProjectId)
+
+  if (!currentWorkspaceId) return null
 
   if (isLoading) return <Skeleton className="h-8 w-36" />
 

@@ -14,7 +14,7 @@ import {
   startOfWeek,
 } from "date-fns"
 import type { Task, TaskPriority, TaskStatus, User } from "@/lib/types"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 
 export interface TaskFilters {
   search: string
@@ -68,7 +68,7 @@ export function isTaskDelayed(task: Task): boolean {
 }
 
 export function getUserById(userId: string): User | undefined {
-  return mockUsers.find((user) => user.id === userId)
+  return lookupUser(userId)
 }
 
 export function formatFileSize(bytes: number): string {

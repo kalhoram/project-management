@@ -13,7 +13,7 @@ import { useNotifications, useCurrentUser } from "@/hooks/queries"
 export function AppTopbar() {
   const { setMobileNavOpen, setCommandOpen } = useUIStore()
   const { data: user } = useCurrentUser()
-  const { data: notifications } = useNotifications(user?.id ?? "user-1")
+  const { data: notifications } = useNotifications(user?.id ?? "")
   const unread = notifications?.filter((n) => !n.read).length ?? 0
 
   return (

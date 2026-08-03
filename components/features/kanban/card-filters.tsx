@@ -22,7 +22,7 @@ import {
 import type { TaskFilters } from "@/lib/task-utils"
 import { DEFAULT_TASK_FILTERS } from "@/lib/task-utils"
 import type { TaskPriority, TaskStatus } from "@/lib/types"
-import { mockLabels, mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { TASK_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
@@ -42,19 +42,20 @@ interface CardFiltersProps {
   filters: TaskFilters
   onChange: (filters: TaskFilters) => void
   members?: string[]
+  labels?: Array<{ id: string; name: string; color: string }>
   className?: string
 }
 
-export function CardFilters({ filters, onChange, members = [], className }: CardFiltersProps) {
+export function CardFilters({ filters, onChange, members = [], labels = [], className }: CardFiltersProps) {
   const activeCount =
     filters.statuses.length +
     filters.priorities.length +
     filters.assigneeIds.length +
     filters.labelIds.length
 
-  const memberOptions = members.length
-    ? mockUsers.filter((u) => members.includes(u.id))
-    : mockUsers
+  const memberOptions = members
+    .map((id) => lookupUser(id))
+    .filter((user): user is NonNullable<typeof user> => !!user)
 
   function toggleStatus(status: TaskStatus) {
     const statuses = filters.statuses.includes(status)
@@ -181,7 +182,7 @@ export function CardFilters({ filters, onChange, members = [], className }: Card
         <DropdownMenuContent align="start" className="w-48">
           <DropdownMenuLabel>فیلتر بر اساس برچسب</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {mockLabels.map((label) => (
+          {labels.map((label) => (
             <DropdownMenuCheckboxItem
               key={label.id}
               checked={filters.labelIds.includes(label.id)}

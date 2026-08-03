@@ -43,7 +43,7 @@ export default function OnboardingInvitePage() {
   const [role, setRole] = useState<WorkspaceRole>("member")
   const [invites, setInvites] = useState<InviteEntry[]>(draft.invites ?? [])
 
-  const inviteLink = `https://teamblue.app/join/${draft.workspaceSlug ?? "your-workspace"}`
+  const inviteLink = `https://yadbox.app/join/${draft.workspaceSlug ?? "your-workspace"}`
 
   function addInvite() {
     const email = emailInput.trim().toLowerCase()

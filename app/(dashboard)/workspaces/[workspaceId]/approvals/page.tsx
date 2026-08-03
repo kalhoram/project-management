@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useApprovals, useWorkspace } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 const statusVariant = {
@@ -129,11 +129,11 @@ export default function ApprovalsPage() {
                       </TableHeader>
                       <TableBody>
                         {filtered.map((req) => {
-                          const requester = mockUsers.find((u) => u.id === req.requesterId)
+                          const requester = lookupUser(req.requesterId)
                           return (
                             <TableRow key={req.id}>
                               <TableCell className="font-medium">{req.title}</TableCell>
-                              <TableCell>{requester?.name}</TableCell>
+                              <TableCell>{requester?.name ?? "کاربر"}</TableCell>
                               <TableCell>
                                 <Badge variant={statusVariant[req.status]}>
                                   {approvalStatusLabels[req.status]}

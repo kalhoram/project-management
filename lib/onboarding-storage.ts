@@ -9,12 +9,20 @@ export interface OnboardingDraft {
   templateId?: string
 }
 
-const STORAGE_KEY = "teamblue-onboarding"
+const STORAGE_KEY = "yadbox-onboarding"
+const LEGACY_STORAGE_KEY = "teamblue-onboarding"
 
 export function getOnboardingDraft(): OnboardingDraft {
   if (typeof window === "undefined") return {}
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
+    let raw = sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) {
+      raw = sessionStorage.getItem(LEGACY_STORAGE_KEY)
+      if (raw) {
+        sessionStorage.setItem(STORAGE_KEY, raw)
+        sessionStorage.removeItem(LEGACY_STORAGE_KEY)
+      }
+    }
     return raw ? (JSON.parse(raw) as OnboardingDraft) : {}
   } catch {
     return {}

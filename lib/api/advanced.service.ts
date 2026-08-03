@@ -1,15 +1,11 @@
-import { delay } from "@/lib/utils"
+import { apiRequest } from "@/lib/api/client"
 import {
-  mockSprints,
-  mockRoadmap,
-  mockOkrs,
-  mockTimeEntries,
-  mockApprovals,
-  mockTasks,
-  mockUsers,
-  mockComments,
-  currentUser,
-} from "@/lib/mock/data"
+  mapCapacityRow,
+  mapEstimationRow,
+  type CapacityApiRow,
+  type EstimationApiRow,
+} from "@/lib/api/mappers"
+import * as workspaceService from "@/lib/api/workspace.service"
 import type {
   Sprint,
   RoadmapItem,
@@ -20,31 +16,24 @@ import type {
   Task,
 } from "@/lib/types"
 
-const LATENCY = 300
-
 export async function getSprints(workspaceId: string): Promise<Sprint[]> {
-  await delay(LATENCY)
-  return mockSprints.filter((s) => s.workspaceId === workspaceId)
+  return apiRequest<Sprint[]>(`/workspaces/${workspaceId}/sprints`)
 }
 
 export async function getRoadmap(workspaceId: string): Promise<RoadmapItem[]> {
-  await delay(LATENCY)
-  return mockRoadmap.filter((r) => r.workspaceId === workspaceId)
+  return apiRequest<RoadmapItem[]>(`/workspaces/${workspaceId}/roadmap`)
 }
 
 export async function getOKRs(workspaceId: string): Promise<OKR[]> {
-  await delay(LATENCY)
-  return mockOkrs.filter((o) => o.workspaceId === workspaceId)
+  return apiRequest<OKR[]>(`/workspaces/${workspaceId}/okrs`)
 }
 
 export async function getTimeEntries(workspaceId: string): Promise<TimeEntry[]> {
-  await delay(LATENCY)
-  return mockTimeEntries.filter((e) => e.workspaceId === workspaceId)
+  return apiRequest<TimeEntry[]>(`/workspaces/${workspaceId}/time-entries`)
 }
 
 export async function getApprovals(workspaceId: string): Promise<ApprovalRequest[]> {
-  await delay(LATENCY)
-  return mockApprovals.filter((a) => a.workspaceId === workspaceId)
+  return apiRequest<ApprovalRequest[]>(`/workspaces/${workspaceId}/approvals`)
 }
 
 export interface CapacityMember {
@@ -53,25 +42,16 @@ export interface CapacityMember {
   allocatedHours: number
   availableHours: number
   utilization: number
+  capacityHours?: number
 }
 
 export async function getCapacity(workspaceId: string): Promise<CapacityMember[]> {
-  await delay(LATENCY)
-  void workspaceId
-  return mockUsers
-    .filter((u) => u.status === "active")
-    .map((user) => {
-      const entries = mockTimeEntries.filter((e) => e.userId === user.id)
-      const allocated = entries.reduce((sum, e) => sum + e.hours, 0)
-      const available = 40
-      return {
-        userId: user.id,
-        name: user.name,
-        allocatedHours: allocated,
-        availableHours: available,
-        utilization: Math.round((allocated / available) * 100),
-      }
-    })
+  const [rows, members] = await Promise.all([
+    apiRequest<CapacityApiRow[]>(`/workspaces/${workspaceId}/capacity`),
+    workspaceService.getWorkspaceMembers(workspaceId).catch(() => []),
+  ])
+  const nameById = new Map(members.map((member) => [member.id, member.name]))
+  return rows.map((row) => mapCapacityRow(row, nameById.get(row.userId)))
 }
 
 export interface EstimationItem {
@@ -82,78 +62,49 @@ export interface EstimationItem {
   actualHours: number
   storyPoints: number
   variance: number
+  confidence?: number
 }
 
 export async function getEstimation(workspaceId: string): Promise<EstimationItem[]> {
-  await delay(LATENCY)
-  return mockTasks
-    .filter((t) => t.workspaceId === workspaceId && t.estimateHours)
-    .map((t) => ({
-      taskId: t.id,
-      key: t.key,
-      title: t.title,
-      estimateHours: t.estimateHours ?? 0,
-      actualHours: t.actualHours ?? 0,
-      storyPoints: t.storyPoints ?? 0,
-      variance: (t.actualHours ?? 0) - (t.estimateHours ?? 0),
-    }))
+  const rows = await apiRequest<EstimationApiRow[]>(`/workspaces/${workspaceId}/estimation`)
+  return rows.map(mapEstimationRow)
 }
 
-export async function getComments(): Promise<Comment[]> {
-  await delay(LATENCY)
-  return mockComments
+export async function getComments(workspaceId: string): Promise<Comment[]> {
+  return apiRequest<Comment[]>(`/workspaces/${workspaceId}/comments`)
 }
 
-export async function getMentions(userId: string): Promise<Comment[]> {
-  await delay(LATENCY)
-  return mockComments.filter((c) => c.mentions.includes(userId))
+export async function getMentions(workspaceId: string, _userId: string): Promise<Comment[]> {
+  return apiRequest<Comment[]>(`/workspaces/${workspaceId}/mentions`)
 }
 
-export async function getMyTasks(userId: string): Promise<Task[]> {
-  await delay(LATENCY)
-  return mockTasks.filter((t) => t.assigneeId === userId)
+export async function getMyTasks(userId: string, workspaceId?: string): Promise<Task[]> {
+  return apiRequest<Task[]>("/tasks/my", {
+    query: { workspaceId },
+  })
 }
 
-export async function getOverdueTasks(userId?: string): Promise<Task[]> {
-  await delay(LATENCY)
-  const now = new Date()
-  let tasks = mockTasks.filter(
-    (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done" && t.status !== "cancelled"
-  )
-  if (userId) tasks = tasks.filter((t) => t.assigneeId === userId)
-  return tasks.sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+export async function getOverdueTasks(userId?: string, workspaceId?: string): Promise<Task[]> {
+  return apiRequest<Task[]>("/tasks/overdue", {
+    query: { mineOnly: userId ? true : undefined, workspaceId },
+  })
 }
 
-export async function getUpcomingDeadlines(userId?: string, days = 14): Promise<Task[]> {
-  await delay(LATENCY)
-  const now = new Date()
-  const cutoff = new Date(now.getTime() + days * 86400000)
-  let tasks = mockTasks.filter(
-    (t) =>
-      t.dueDate &&
-      new Date(t.dueDate) >= now &&
-      new Date(t.dueDate) <= cutoff &&
-      t.status !== "done" &&
-      t.status !== "cancelled"
-  )
-  if (userId) tasks = tasks.filter((t) => t.assigneeId === userId)
-  return tasks.sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+export async function getUpcomingDeadlines(
+  userId?: string,
+  days = 14,
+  workspaceId?: string
+): Promise<Task[]> {
+  return apiRequest<Task[]>("/tasks/upcoming-deadlines", {
+    query: { days, mineOnly: userId ? true : undefined, workspaceId },
+  })
 }
 
-export async function getAdminSettings() {
-  await delay(LATENCY)
-  return {
-    maintenanceMode: false,
-    featureFlags: {
-      aiAssist: false,
-      advancedReports: true,
-      sso: false,
-      betaKanban: true,
-      exportPdf: true,
-    },
-    supportEmail: "support@teamblue.app",
-    maxUploadMb: 50,
-  }
+export async function getAdminSettings(): Promise<{
+  maintenanceMode: boolean
+  featureFlags: Record<string, boolean>
+  supportEmail: string
+  maxUploadMb: number
+}> {
+  return apiRequest("/admin/settings")
 }
-
-export { currentUser }

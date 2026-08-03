@@ -13,7 +13,7 @@ export default function KanbanPage() {
 
   const columns = useKanbanColumns(projectId)
   const tasks = useTasks(projectId)
-  const labels = useLabels()
+  const labels = useLabels(workspaceId)
 
   const isLoading = columns.isLoading || tasks.isLoading || labels.isLoading
   const isError = columns.isError || tasks.isError

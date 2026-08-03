@@ -33,6 +33,17 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+
 # vercel
 .vercel
 

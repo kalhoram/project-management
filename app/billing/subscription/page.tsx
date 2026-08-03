@@ -13,11 +13,14 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { useSubscription } from "@/hooks/queries"
-import { SUBSCRIPTION_STATUS_LABELS, DEFAULT_WORKSPACE_ID } from "@/lib/constants"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { SUBSCRIPTION_STATUS_LABELS } from "@/lib/constants"
+import type { Plan } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 
 export default function SubscriptionPage() {
-  const subscription = useSubscription(DEFAULT_WORKSPACE_ID)
+  const { currentWorkspaceId } = useWorkspaceStore()
+  const subscription = useSubscription(currentWorkspaceId ?? "")
   const [cancelOpen, setCancelOpen] = useState(false)
 
   if (subscription.isLoading) return <PageSkeleton />
@@ -26,7 +29,7 @@ export default function SubscriptionPage() {
   }
 
   const sub = subscription.data
-  const plan = sub.plan
+  const plan = sub.plan as Plan
 
   function handleCancel() {
     toast.success("اشتراک لغو شد", { description: "طرح شما تا تاریخ تمدید فعال باقی می‌ماند." })

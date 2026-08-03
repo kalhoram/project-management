@@ -1,53 +1,58 @@
-import { delay } from "@/lib/utils"
-import {
-  mockWorkspaces,
-  mockTeams,
-  mockRoles,
-  mockPermissions,
-  mockUsers,
-} from "@/lib/mock/data"
+import { apiRequest } from "@/lib/api/client"
+import { mapWorkspaceMember, type WorkspaceMemberApiRow, type WorkspaceMemberView } from "@/lib/api/mappers"
 import type { Workspace, Team, Role, Permission, User } from "@/lib/types"
 
-const LATENCY = 300
-
 export async function getWorkspaces(): Promise<Workspace[]> {
-  await delay(LATENCY)
-  return mockWorkspaces
+  return apiRequest<Workspace[]>("/workspaces")
+}
+
+export async function createWorkspace(data: {
+  name: string
+  slug?: string
+  description?: string
+}): Promise<Workspace> {
+  return apiRequest<Workspace>("/workspaces", {
+    method: "POST",
+    body: data,
+  })
 }
 
 export async function getWorkspace(workspaceId: string): Promise<Workspace> {
-  await delay(LATENCY)
-  const workspace = mockWorkspaces.find((w) => w.id === workspaceId)
-  if (!workspace) throw new Error("Workspace not found")
-  return workspace
+  return apiRequest<Workspace>(`/workspaces/${workspaceId}`)
 }
 
-export async function getWorkspaceMembers(workspaceId: string): Promise<User[]> {
-  await delay(LATENCY)
-  void workspaceId
-  return mockUsers
+export async function getWorkspaceMembers(workspaceId: string): Promise<WorkspaceMemberView[]> {
+  const rows = await apiRequest<WorkspaceMemberApiRow[]>(`/workspaces/${workspaceId}/members`)
+  return rows.map(mapWorkspaceMember)
 }
 
 export async function getWorkspaceTeams(workspaceId: string): Promise<Team[]> {
-  await delay(LATENCY)
-  return mockTeams.filter((t) => t.workspaceId === workspaceId)
+  return apiRequest<Team[]>(`/workspaces/${workspaceId}/teams`)
 }
 
 export async function getWorkspaceRoles(workspaceId: string): Promise<Role[]> {
-  await delay(LATENCY)
-  return mockRoles.filter((r) => r.workspaceId === workspaceId)
+  return apiRequest<Role[]>(`/workspaces/${workspaceId}/roles`)
 }
 
 export async function getPermissions(): Promise<Permission[]> {
-  await delay(LATENCY)
-  return mockPermissions
+  return apiRequest<Permission[]>("/permissions")
 }
 
 export async function updateWorkspace(
   workspaceId: string,
   data: Partial<Workspace>
 ): Promise<Workspace> {
-  await delay(LATENCY)
-  const workspace = await getWorkspace(workspaceId)
-  return { ...workspace, ...data }
+  return apiRequest<Workspace>(`/workspaces/${workspaceId}`, {
+    method: "PATCH",
+    body: {
+      name: data.name,
+      slug: data.slug,
+      logoUrl: data.logoUrl,
+      description: data.description,
+      industry: data.industry,
+      companySize: data.companySize,
+      timezone: data.timezone,
+      defaultVisibility: data.defaultVisibility,
+    },
+  })
 }

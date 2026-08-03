@@ -1,6 +1,6 @@
 "use client"
 
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Tooltip,
@@ -31,9 +31,7 @@ export function MemberAvatarGroup({
   size = "sm",
   className,
 }: MemberAvatarGroupProps) {
-  const users = userIds
-    .map((id) => mockUsers.find((u) => u.id === id))
-    .filter(Boolean)
+  const users = userIds.map((id) => lookupUser(id)).filter(Boolean)
   const visible = users.slice(0, max)
   const remaining = users.length - visible.length
   const sizeClass = size === "sm" ? "h-6 w-6 text-[10px]" : "h-8 w-8 text-xs"

@@ -10,6 +10,7 @@ import { TaskForm, type TaskFormValues } from "@/components/features/tasks/task-
 import { Card, CardContent } from "@/components/ui/card"
 import {
   useCreateTask,
+  useCurrentUser,
   useLabels,
   useProject,
   useWorkspace,
@@ -23,8 +24,9 @@ export default function NewTaskPage() {
 
   const workspace = useWorkspace(workspaceId)
   const project = useProject(projectId)
-  const labels = useLabels()
+  const labels = useLabels(workspaceId)
   const createTask = useCreateTask()
+  const currentUser = useCurrentUser()
 
   const isLoading = workspace.isLoading || project.isLoading || labels.isLoading
 
@@ -50,8 +52,6 @@ export default function NewTaskPage() {
         projectId,
         data: {
           ...values,
-          workspaceId,
-          reporterId: "user-1",
           labelIds: values.labelIds ?? [],
           assigneeId: values.assigneeId || undefined,
         },

@@ -26,6 +26,7 @@ import {
   useOverdueTasks,
   useUpcomingDeadlines,
 } from "@/hooks/queries"
+import { useWorkspaceStore } from "@/stores/ui-store"
 import { Badge } from "@/components/ui/badge"
 import { STATUS_COLORS, TASK_STATUS_LABELS } from "@/lib/constants"
 import { getRoleLabel, listUserPermissions } from "@/lib/permissions"
@@ -50,11 +51,19 @@ const progressTrend = [
 
 export default function DashboardPage() {
   const user = useCurrentUser()
-  const metrics = useDashboardMetrics()
-  const activities = useActivities()
-  const myTasks = useMyTasks(user.data?.id ?? "")
-  const overdue = useOverdueTasks(user.data?.id)
-  const deadlines = useUpcomingDeadlines(user.data?.id)
+  const { currentWorkspaceId, currentProjectId } = useWorkspaceStore()
+  const metrics = useDashboardMetrics(currentWorkspaceId ?? "")
+  const activities = useActivities(currentWorkspaceId ?? undefined)
+  const myTasks = useMyTasks(user.data?.id ?? "", currentWorkspaceId ?? undefined)
+  const overdue = useOverdueTasks(user.data?.id, currentWorkspaceId ?? undefined)
+  const deadlines = useUpcomingDeadlines(user.data?.id, currentWorkspaceId ?? undefined)
+
+  const taskListHref =
+    currentWorkspaceId && currentProjectId
+      ? `/workspaces/${currentWorkspaceId}/projects/${currentProjectId}/list`
+      : currentWorkspaceId
+        ? `/workspaces/${currentWorkspaceId}/projects`
+        : "/workspaces"
 
   const isLoading =
     user.isLoading || metrics.isLoading || activities.isLoading || myTasks.isLoading
@@ -63,6 +72,24 @@ export default function DashboardPage() {
     return (
       <DashboardShell>
         <PageSkeleton />
+      </DashboardShell>
+    )
+  }
+
+  if (!currentWorkspaceId) {
+    return (
+      <DashboardShell>
+        <PageHeader title="داشبورد" description="فضای کاری انتخاب نشده است" />
+        <Card>
+          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+            برای مشاهده داشبورد، ابتدا یک فضای کاری انتخاب کنید.
+            <div className="mt-4">
+              <Button asChild>
+                <Link href="/workspaces">مشاهده فضاهای کاری</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </DashboardShell>
     )
   }
@@ -141,7 +168,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-semibold">وظایف من</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/workspaces/ws-1/projects/proj-1/list">
+              <Link href={taskListHref}>
                 مشاهده همه
                 <ArrowRight className="h-4 w-4" />
               </Link>

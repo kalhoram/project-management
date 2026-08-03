@@ -107,7 +107,7 @@ export default function OnboardingWorkspacePage() {
             <div className="space-y-2">
               <Label htmlFor="workspaceSlug">آدرس فضای کاری</Label>
               <div className="flex items-center gap-2">
-                <span className="shrink-0 text-sm text-muted-foreground">teamblue.app/</span>
+                <span className="shrink-0 text-sm text-muted-foreground">yadbox.app/</span>
                 <Input id="workspaceSlug" placeholder="acme-inc" {...register("workspaceSlug")} />
               </div>
               {errors.workspaceSlug ? (

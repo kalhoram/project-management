@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { useProject, useTasks, useWorkspace } from "@/hooks/queries"
-import { mockCategories, mockUsers } from "@/lib/mock/data"
+import { useProject, useProjectCategories, useTasks, useWorkspace } from "@/hooks/queries"
+import { lookupUser } from "@/lib/user-registry"
 import { VISIBILITY_LABELS } from "@/lib/constants"
 import { formatDate } from "@/lib/utils"
 
@@ -26,6 +26,7 @@ export default function ProjectDetailsPage() {
   const workspace = useWorkspace(workspaceId)
   const project = useProject(projectId)
   const tasks = useTasks(projectId)
+  const categories = useProjectCategories(workspaceId)
 
   const isLoading = workspace.isLoading || project.isLoading || tasks.isLoading
   const isError = project.isError || workspace.isError
@@ -53,8 +54,8 @@ export default function ProjectDetailsPage() {
   }
 
   const p = project.data
-  const category = mockCategories.find((c) => c.id === p.categoryId)
-  const owner = mockUsers.find((u) => u.id === p.ownerId)
+  const category = (categories.data ?? []).find((c) => c.id === p.categoryId)
+  const owner = lookupUser(p.ownerId)
   const openTasks = (tasks.data ?? []).filter(
     (t) => t.status !== "done" && t.status !== "cancelled"
   ).length

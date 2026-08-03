@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { Inbox, type LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -8,6 +9,7 @@ interface EmptyStateProps {
   description?: string
   actionLabel?: string
   onAction?: () => void
+  action?: ReactNode
   className?: string
 }
 
@@ -17,6 +19,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+  action,
   className,
 }: EmptyStateProps) {
   return (
@@ -33,7 +36,8 @@ export function EmptyState({
       {description ? (
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
       ) : null}
-      {actionLabel && onAction ? (
+      {action ? <div className="mt-4">{action}</div> : null}
+      {!action && actionLabel && onAction ? (
         <Button className="mt-4" onClick={onAction}>
           {actionLabel}
         </Button>

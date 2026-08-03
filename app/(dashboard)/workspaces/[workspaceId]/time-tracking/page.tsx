@@ -31,8 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useTimeEntries, useTimeTrackingReport, useWorkspace } from "@/hooks/queries"
-import { mockTasks, mockUsers } from "@/lib/mock/data"
+import { useTimeEntries, useTimeTrackingReport, useWorkspace, useWorkspaceTasks } from "@/hooks/queries"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 export default function TimeTrackingPage() {
@@ -41,6 +41,7 @@ export default function TimeTrackingPage() {
   const workspace = useWorkspace(workspaceId)
   const entries = useTimeEntries(workspaceId)
   const report = useTimeTrackingReport(workspaceId)
+  const workspaceTasks = useWorkspaceTasks(workspaceId)
   const [logOpen, setLogOpen] = useState(false)
 
   if (workspace.isLoading || entries.isLoading) {
@@ -57,6 +58,7 @@ export default function TimeTrackingPage() {
 
   const items = entries.data ?? []
   const r = report.data
+  const taskById = new Map((workspaceTasks.data ?? []).map((task) => [task.id, task]))
 
   return (
     <DashboardShell>
@@ -97,13 +99,13 @@ export default function TimeTrackingPage() {
             </TableHeader>
             <TableBody>
               {items.map((entry) => {
-                const task = mockTasks.find((t) => t.id === entry.taskId)
-                const user = mockUsers.find((u) => u.id === entry.userId)
+                const task = taskById.get(entry.taskId)
+                const user = lookupUser(entry.userId)
                 return (
                   <TableRow key={entry.id}>
                     <TableCell>{formatDate(entry.date)}</TableCell>
-                    <TableCell>{task?.key ?? entry.taskId}</TableCell>
-                    <TableCell>{user?.name}</TableCell>
+                    <TableCell>{task ? `${task.key} · ${task.title}` : entry.taskId}</TableCell>
+                    <TableCell>{user?.name ?? "—"}</TableCell>
                     <TableCell>{entry.hours}س</TableCell>
                     <TableCell>
                       <Badge variant={entry.billable ? "success" : "secondary"}>

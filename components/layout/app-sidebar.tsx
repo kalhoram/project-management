@@ -43,20 +43,23 @@ const navItems: Array<{
   href: string
   icon: typeof LayoutDashboard
   permission?: string
+  projectScoped?: boolean
 }> = [
   { label: "داشبورد", href: "/dashboard", icon: LayoutDashboard },
   { label: "پروژه‌ها", href: "projects", icon: FolderKanban },
   {
     label: "وظایف من",
-    href: "/workspaces/ws-1/projects/proj-1/list",
+    href: "list",
     icon: CheckSquare,
     permission: "tasks.create",
+    projectScoped: true,
   },
   {
     label: "تقویم",
-    href: "/workspaces/ws-1/projects/proj-1/calendar",
+    href: "calendar",
     icon: CalendarDays,
     permission: "tasks.create",
+    projectScoped: true,
   },
   { label: "فایل‌ها", href: "files", icon: FileText, permission: "files.upload" },
   { label: "اسپرینت‌ها", href: "sprints", icon: Workflow, permission: "projects.manage" },
@@ -67,9 +70,10 @@ const navItems: Array<{
   { label: "تأییدها", href: "approvals", icon: Users, permission: "members.manage" },
   {
     label: "گزارش‌ها",
-    href: "/workspaces/ws-1/projects/proj-1/reports",
+    href: "reports",
     icon: ChartColumn,
     permission: "reports.view",
+    projectScoped: true,
   },
   { label: "اعضا", href: "members", icon: Users, permission: "members.invite" },
   { label: "نقش‌ها", href: "roles", icon: Shield, permission: "members.manage" },
@@ -79,15 +83,24 @@ const navItems: Array<{
   { label: "تنظیمات", href: "settings", icon: Settings, permission: "workspace.manage" },
 ]
 
-function resolveHref(href: string, workspaceId: string) {
+function resolveHref(
+  href: string,
+  workspaceId: string | null,
+  projectId: string | null,
+  projectScoped?: boolean
+) {
   if (href.startsWith("/")) return href
+  if (!workspaceId) return "/workspaces"
+  if (projectScoped && projectId) {
+    return `/workspaces/${workspaceId}/projects/${projectId}/${href}`
+  }
   return `/workspaces/${workspaceId}/${href}`
 }
 
 export function AppSidebar() {
   const pathname = usePathname()
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
-  const { currentWorkspaceId } = useWorkspaceStore()
+  const { currentWorkspaceId, currentProjectId } = useWorkspaceStore()
   const { data: user } = useCurrentUser()
 
   const visibleItems = navItems.filter(
@@ -132,7 +145,7 @@ export function AppSidebar() {
       <ScrollArea className="flex-1 px-2 py-3">
         <nav className="space-y-1">
           {visibleItems.map((item) => {
-            const href = resolveHref(item.href, currentWorkspaceId)
+            const href = resolveHref(item.href, currentWorkspaceId, currentProjectId, item.projectScoped)
             const active = pathname === href || pathname.startsWith(`${href}/`)
             const Icon = item.icon
             const link = (

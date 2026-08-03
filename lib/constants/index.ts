@@ -2,9 +2,6 @@ export const APP_NAME = "یادباکس"
 export const APP_NAME_FULL = "یادباکس YadBox"
 export const APP_DESCRIPTION = "مدیریت پروژه برای تیم‌های مدرن"
 
-export const DEFAULT_WORKSPACE_ID = "ws-1"
-export const DEFAULT_PROJECT_ID = "proj-1"
-
 export const SIDEBAR_WIDTH = 240
 export const SIDEBAR_COLLAPSED_WIDTH = 64
 

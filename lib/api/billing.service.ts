@@ -1,44 +1,23 @@
-import { delay } from "@/lib/utils"
-import { mockPlans, mockInvoices, mockPayments } from "@/lib/mock/data"
+import { apiRequest } from "@/lib/api/client"
 import type { Plan, Invoice, Payment } from "@/lib/types"
-
-const LATENCY = 300
+import type { SubscriptionResponse } from "@/lib/api/types"
 
 export async function getPlans(): Promise<Plan[]> {
-  await delay(LATENCY)
-  return mockPlans.filter((p) => p.status === "active")
+  return apiRequest<Plan[]>("/billing/plans")
 }
 
 export async function getPlan(planId: string): Promise<Plan> {
-  await delay(LATENCY)
-  const plan = mockPlans.find((p) => p.id === planId)
-  if (!plan) throw new Error("Plan not found")
-  return plan
+  return apiRequest<Plan>(`/billing/plans/${planId}`)
 }
 
 export async function getInvoices(workspaceId: string): Promise<Invoice[]> {
-  await delay(LATENCY)
-  return mockInvoices.filter((i) => i.workspaceId === workspaceId)
+  return apiRequest<Invoice[]>(`/workspaces/${workspaceId}/billing/invoices`)
 }
 
-export async function getPayments(workspaceId?: string): Promise<Payment[]> {
-  await delay(LATENCY)
-  if (!workspaceId) return mockPayments
-  return mockPayments.filter((p) => p.workspaceId === workspaceId)
+export async function getPayments(_workspaceId?: string): Promise<Payment[]> {
+  return apiRequest<Payment[]>("/admin/payments")
 }
 
-export async function getSubscription(workspaceId: string) {
-  await delay(LATENCY)
-  const plan = mockPlans.find((p) => p.id === "plan-pro")!
-  return {
-    workspaceId,
-    plan,
-    renewalDate: "2026-08-01",
-    status: "active" as const,
-    usage: {
-      members: 12,
-      projects: 8,
-      storageGb: 24,
-    },
-  }
+export async function getSubscription(workspaceId: string): Promise<SubscriptionResponse> {
+  return apiRequest<SubscriptionResponse>(`/workspaces/${workspaceId}/billing/subscription`)
 }

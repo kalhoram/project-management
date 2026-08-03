@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: yadbox
+      POSTGRES_PASSWORD: yadbox
+      POSTGRES_DB: yadbox
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yadbox -d yadbox"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env.example
+    environment:
+      DATABASE_URL: postgresql+asyncpg://yadbox:yadbox@postgres:5432/yadbox
+      DATABASE_URL_SYNC: postgresql://yadbox:yadbox@postgres:5432/yadbox
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MINIO_ENDPOINT: minio:9000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ..:/app
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m scripts.seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env.example
+    environment:
+      DATABASE_URL: postgresql+asyncpg://yadbox:yadbox@postgres:5432/yadbox
+      DATABASE_URL_SYNC: postgresql://yadbox:yadbox@postgres:5432/yadbox
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      - ..:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+
+  beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env.example
+    environment:
+      DATABASE_URL: postgresql+asyncpg://yadbox:yadbox@postgres:5432/yadbox
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      - ..:/app
+    depends_on:
+      - redis
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+
+volumes:
+  pgdata:
+  minio_data:
+  uploads:

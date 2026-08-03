@@ -11,7 +11,7 @@ import { PageSkeleton } from "@/components/common/loading-skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { useRoadmap, useWorkspace } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 const statusVariant = {
@@ -61,7 +61,7 @@ export default function RoadmapPage() {
       ) : (
         <div className="space-y-3">
           {items.map((item) => {
-            const owner = mockUsers.find((u) => u.id === item.ownerId)
+            const owner = lookupUser(item.ownerId)
             return (
               <Card key={item.id}>
                 <CardContent className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">

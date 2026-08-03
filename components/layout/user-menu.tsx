@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { CreditCard, LogOut, Moon, Settings, User } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -15,14 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useCurrentUser, useLogout } from "@/hooks/queries"
+import { useAuth } from "@/components/auth-provider"
+import { useCurrentUser } from "@/hooks/queries"
 import { getRoleLabel, userHasPermission } from "@/lib/permissions"
 
 export function UserMenu() {
-  const router = useRouter()
   const { setTheme, theme } = useTheme()
   const { data: user } = useCurrentUser()
-  const logout = useLogout()
+  const { signOut } = useAuth()
   const initials =
     user?.name
       ?.split(" ")
@@ -33,8 +32,7 @@ export function UserMenu() {
   const canBilling = userHasPermission(user, "billing.manage")
 
   async function handleLogout() {
-    await logout.mutateAsync()
-    router.push("/login")
+    await signOut()
   }
 
   return (

@@ -33,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { Task, TaskStatus } from "@/lib/types"
+import type { Task, TaskStatus, User } from "@/lib/types"
 import { getUserById, isTaskOverdue } from "@/lib/task-utils"
 import { formatDate } from "@/lib/utils"
 import { useUIStore } from "@/stores/ui-store"
@@ -46,6 +46,7 @@ interface TaskTableProps {
   tasks: Task[]
   workspaceId: string
   projectId: string
+  members?: User[]
   onStatusChange?: (taskId: string, status: TaskStatus) => void
   onAssigneeChange?: (taskId: string, assigneeId: string | undefined) => void
 }
@@ -63,6 +64,7 @@ export function TaskTable({
   tasks,
   workspaceId,
   projectId,
+  members = [],
   onStatusChange,
   onAssigneeChange,
 }: TaskTableProps) {
@@ -194,14 +196,11 @@ export function TaskTable({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">بدون مسئول</SelectItem>
-                  {["user-1", "user-2", "user-3", "user-4"].map((id) => {
-                    const user = getUserById(id)
-                    return user ? (
-                      <SelectItem key={id} value={id}>
-                        {user.name}
+                  {members.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
                       </SelectItem>
-                    ) : null
-                  })}
+                    ))}
                 </SelectContent>
               </Select>
             )

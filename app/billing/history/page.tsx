@@ -14,7 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useBillingPayments } from "@/hooks/queries"
-import { PAYMENT_STATUS_LABELS, DEFAULT_WORKSPACE_ID } from "@/lib/constants"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { PAYMENT_STATUS_LABELS } from "@/lib/constants"
 import { formatDate } from "@/lib/utils"
 import type { PaymentStatus } from "@/lib/types"
 
@@ -26,7 +27,8 @@ const statusVariant: Record<PaymentStatus, "default" | "secondary" | "success" |
 }
 
 export default function BillingHistoryPage() {
-  const payments = useBillingPayments(DEFAULT_WORKSPACE_ID)
+  const { currentWorkspaceId } = useWorkspaceStore()
+  const payments = useBillingPayments(currentWorkspaceId ?? undefined)
 
   if (payments.isLoading) return <PageSkeleton />
   if (payments.isError) return <ErrorState onRetry={() => payments.refetch()} />

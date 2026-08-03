@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/select"
 import { useProject, useWorkspace, useWorkspaceMembers } from "@/hooks/queries"
 import { ROLE_LABELS, USER_STATUS_LABELS } from "@/lib/constants"
-import { mockUsers } from "@/lib/mock/data"
 import type { WorkspaceRole } from "@/lib/types"
 
 function initials(name: string) {
@@ -63,7 +62,7 @@ export default function ProjectMembersPage() {
   const [selectedRole, setSelectedRole] = useState<WorkspaceRole>("member")
 
   const projectMembers = (project.data?.memberIds ?? [])
-    .map((id) => mockUsers.find((u) => u.id === id))
+    .map((id) => (allMembers.data ?? []).find((member) => member.id === id))
     .filter(Boolean)
 
   const availableToAdd = (allMembers.data ?? []).filter(

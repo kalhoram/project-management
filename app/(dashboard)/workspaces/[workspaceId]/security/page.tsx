@@ -104,7 +104,7 @@ export default function WorkspaceSecurityPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="entity-id">شناسه موجودیت</Label>
-                <Input id="entity-id" placeholder="teamblue-workspace" />
+                <Input id="entity-id" placeholder="yadbox-workspace" />
               </div>
             </div>
           ) : null}

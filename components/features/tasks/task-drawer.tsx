@@ -17,12 +17,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useTask, useTaskComments, useLabels } from "@/hooks/queries"
+import { useTask, useTaskComments, useLabels, useProjectActivities } from "@/hooks/queries"
+import * as fileService from "@/lib/api/file.service"
 import { useUIStore } from "@/stores/ui-store"
 import { getChecklistProgress, getUserById } from "@/lib/task-utils"
 import { formatDate } from "@/lib/utils"
-import { mockAttachments, mockActivities } from "@/lib/mock/data"
 import { formatFileSize } from "@/lib/task-utils"
+import { useQuery } from "@tanstack/react-query"
 
 interface TaskDrawerProps {
   workspaceId: string
@@ -45,7 +46,13 @@ export function TaskDrawer({ workspaceId, projectId }: TaskDrawerProps) {
 
   const task = useTask(selectedTaskId ?? "")
   const comments = useTaskComments(selectedTaskId ?? "")
-  const labelsQuery = useLabels()
+  const labelsQuery = useLabels(workspaceId)
+  const activitiesQuery = useProjectActivities(workspaceId, projectId)
+  const filesQuery = useQuery({
+    queryKey: ["task-files", selectedTaskId],
+    queryFn: () => fileService.getTaskFiles(selectedTaskId!),
+    enabled: !!selectedTaskId,
+  })
 
   const taskData = task.data
   const labelMap = labelsQuery.data ?? []
@@ -54,12 +61,10 @@ export function TaskDrawer({ workspaceId, projectId }: TaskDrawerProps) {
     : []
   const checklist = taskData ? getChecklistProgress(taskData) : { completed: 0, total: 0 }
   const assignee = taskData?.assigneeId ? getUserById(taskData.assigneeId) : undefined
-  const attachments = taskData
-    ? mockAttachments.filter((a) => a.taskId === taskData.id && !a.deletedAt)
-    : []
-  const activities = taskData
-    ? mockActivities.filter((a) => a.entityType === "task" && a.entityId === taskData.id)
-    : []
+  const attachments = filesQuery.data ?? []
+  const activities = (activitiesQuery.data ?? []).filter(
+    (a) => a.entityType === "task" && a.entityId === taskData?.id
+  )
 
   return (
     <Sheet open={taskDrawerOpen} onOpenChange={(open) => !open && closeTaskDrawer()}>

@@ -17,7 +17,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useInvoices } from "@/hooks/queries"
-import { INVOICE_STATUS_LABELS, DEFAULT_WORKSPACE_ID } from "@/lib/constants"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { INVOICE_STATUS_LABELS } from "@/lib/constants"
 import { formatDate } from "@/lib/utils"
 import type { InvoiceStatus } from "@/lib/types"
 
@@ -30,7 +31,8 @@ const statusVariant: Record<InvoiceStatus, "default" | "secondary" | "success" |
 }
 
 export default function InvoicesPage() {
-  const invoices = useInvoices(DEFAULT_WORKSPACE_ID)
+  const { currentWorkspaceId } = useWorkspaceStore()
+  const invoices = useInvoices(currentWorkspaceId ?? "")
 
   if (invoices.isLoading) return <PageSkeleton />
   if (invoices.isError) return <ErrorState onRetry={() => invoices.refetch()} />

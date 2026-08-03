@@ -7,7 +7,7 @@ import { TaskTable } from "@/components/features/list/task-table"
 import { ProjectViewShell } from "@/components/features/projects/project-view-shell"
 import { PageToolbar } from "@/components/common/page-toolbar"
 import { TableSkeleton } from "@/components/common/loading-skeleton"
-import { useTasks, useProject } from "@/hooks/queries"
+import { useTasks, useProject, useWorkspaceMembers } from "@/hooks/queries"
 import {
   DEFAULT_TASK_FILTERS,
   filterTasks,
@@ -22,6 +22,7 @@ export default function ListPage() {
 
   const project = useProject(projectId)
   const tasks = useTasks(projectId)
+  const workspaceMembers = useWorkspaceMembers(workspaceId)
   const [localTasks, setLocalTasks] = useState<Task[] | null>(null)
   const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS)
 
@@ -85,6 +86,7 @@ export default function ListPage() {
         tasks={filtered}
         workspaceId={workspaceId}
         projectId={projectId}
+        members={workspaceMembers.data ?? []}
         onStatusChange={handleStatusChange}
         onAssigneeChange={handleAssigneeChange}
       />

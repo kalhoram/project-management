@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useOKRs, useWorkspace } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 
 const statusVariant = {
   on_track: "success" as const,
@@ -70,7 +70,7 @@ export default function OKRPage() {
         ) : (
           <div className="space-y-4">
             {items.map((okr) => {
-              const owner = mockUsers.find((u) => u.id === okr.ownerId)
+              const owner = lookupUser(okr.ownerId)
               return (
                 <Card key={okr.id} className="text-start">
                   <CardHeader className="space-y-3 pb-2">
@@ -94,7 +94,7 @@ export default function OKRPage() {
                       <Progress value={okr.progress} />
                     </div>
                     <ul className="space-y-3">
-                      {okr.keyResults.map((kr) => (
+                      {(okr.keyResults ?? []).map((kr) => (
                         <li key={kr.id} className="rounded-sm border border-border p-3 text-start">
                           <div className="flex items-start justify-between gap-3 text-sm">
                             <span className="min-w-0 flex-1">{kr.title}</span>
@@ -103,7 +103,11 @@ export default function OKRPage() {
                             </span>
                           </div>
                           <Progress
-                            value={Math.min((kr.current / kr.target) * 100, 100)}
+                            value={
+                              kr.target > 0
+                                ? Math.min((kr.current / kr.target) * 100, 100)
+                                : 0
+                            }
                             className="mt-2"
                           />
                         </li>

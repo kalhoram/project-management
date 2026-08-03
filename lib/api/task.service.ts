@@ -1,69 +1,72 @@
-import { delay } from "@/lib/utils"
-import { mockTasks, mockComments, mockLabels } from "@/lib/mock/data"
+import { apiRequest } from "@/lib/api/client"
 import type { Task, Comment, Label } from "@/lib/types"
 
-const LATENCY = 300
-
 export async function getTasks(projectId: string): Promise<Task[]> {
-  await delay(LATENCY)
-  return mockTasks
-    .filter((t) => t.projectId === projectId)
-    .sort((a, b) => a.order - b.order)
+  return apiRequest<Task[]>(`/projects/${projectId}/tasks`)
 }
 
 export async function getWorkspaceTasks(workspaceId: string): Promise<Task[]> {
-  await delay(LATENCY)
-  return mockTasks.filter((t) => t.workspaceId === workspaceId)
+  return apiRequest<Task[]>(`/workspaces/${workspaceId}/tasks`)
 }
 
 export async function getTask(taskId: string): Promise<Task> {
-  await delay(LATENCY)
-  const task = mockTasks.find((t) => t.id === taskId)
-  if (!task) throw new Error("Task not found")
-  return task
+  return apiRequest<Task>(`/tasks/${taskId}`)
 }
 
 export async function getTaskComments(taskId: string): Promise<Comment[]> {
-  await delay(LATENCY)
-  return mockComments.filter((c) => c.entityType === "task" && c.entityId === taskId)
+  return apiRequest<Comment[]>(`/tasks/${taskId}/comments`)
 }
 
-export async function getLabels(): Promise<Label[]> {
-  await delay(LATENCY)
-  return mockLabels
+export async function getLabels(workspaceId: string): Promise<Label[]> {
+  return apiRequest<Label[]>(`/workspaces/${workspaceId}/labels`)
 }
 
-export async function createTask(
-  projectId: string,
-  data: Partial<Task>
-): Promise<Task> {
-  await delay(LATENCY)
-  return {
-    id: `task-${Date.now()}`,
-    projectId,
-    workspaceId: data.workspaceId ?? "ws-1",
-    key: data.key ?? "NEW-1",
-    title: data.title ?? "Untitled task",
-    status: data.status ?? "todo",
-    priority: data.priority ?? "medium",
-    reporterId: data.reporterId ?? "user-1",
-    labelIds: data.labelIds ?? [],
-    progress: 0,
-    order: 0,
-    blockedByIds: [],
-    blockingIds: [],
-    checklist: [],
-    attachmentCount: 0,
-    commentCount: 0,
-    isRecurring: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    ...data,
-  } as Task
+export async function createTask(projectId: string, data: Partial<Task>): Promise<Task> {
+  return apiRequest<Task>("/tasks", {
+    method: "POST",
+    body: {
+      projectId,
+      title: data.title,
+      description: data.description || undefined,
+      status: data.status,
+      priority: data.priority,
+      assigneeId: data.assigneeId || undefined,
+      labelIds: data.labelIds ?? [],
+      startDate: data.startDate || undefined,
+      dueDate: data.dueDate || undefined,
+      estimateHours:
+        data.estimateHours != null && !Number.isNaN(Number(data.estimateHours))
+          ? data.estimateHours
+          : undefined,
+      storyPoints:
+        data.storyPoints != null && !Number.isNaN(Number(data.storyPoints))
+          ? data.storyPoints
+          : undefined,
+      columnId: data.columnId || undefined,
+      order: data.order,
+      parentId: data.parentId || undefined,
+    },
+  })
 }
 
 export async function updateTask(taskId: string, data: Partial<Task>): Promise<Task> {
-  await delay(LATENCY)
-  const task = await getTask(taskId)
-  return { ...task, ...data, updatedAt: new Date().toISOString() }
+  return apiRequest<Task>(`/tasks/${taskId}`, {
+    method: "PATCH",
+    body: {
+      title: data.title,
+      description: data.description,
+      status: data.status,
+      priority: data.priority,
+      assigneeId: data.assigneeId,
+      labelIds: data.labelIds,
+      startDate: data.startDate,
+      dueDate: data.dueDate,
+      estimateHours: data.estimateHours,
+      actualHours: data.actualHours,
+      storyPoints: data.storyPoints,
+      progress: data.progress,
+      columnId: data.columnId,
+      order: data.order,
+    },
+  })
 }

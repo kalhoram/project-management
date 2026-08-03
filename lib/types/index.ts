@@ -35,6 +35,8 @@ export interface User {
   id: string
   name: string
   email: string
+  /** Optional login username (demo auth) */
+  username?: string
   avatarUrl?: string
   bio?: string
   jobTitle?: string

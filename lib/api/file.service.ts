@@ -1,39 +1,50 @@
-import { delay } from "@/lib/utils"
-import { mockAttachments, mockFolders } from "@/lib/mock/data"
+import { apiDownload, apiRequest, apiUpload } from "@/lib/api/client"
 import type { Attachment, FileFolder } from "@/lib/types"
 
-const LATENCY = 300
-
 export async function getWorkspaceFiles(workspaceId: string): Promise<Attachment[]> {
-  await delay(LATENCY)
-  return mockAttachments.filter((f) => f.workspaceId === workspaceId && !f.deletedAt)
+  return apiRequest<Attachment[]>(`/workspaces/${workspaceId}/files`)
 }
 
 export async function getProjectFiles(projectId: string): Promise<Attachment[]> {
-  await delay(LATENCY)
-  return mockAttachments.filter((f) => f.projectId === projectId && !f.deletedAt)
+  return apiRequest<Attachment[]>(`/projects/${projectId}/files`)
 }
 
 export async function getTaskFiles(taskId: string): Promise<Attachment[]> {
-  await delay(LATENCY)
-  return mockAttachments.filter((f) => f.taskId === taskId && !f.deletedAt)
+  return apiRequest<Attachment[]>(`/tasks/${taskId}/files`)
 }
 
 export async function getDeletedFiles(workspaceId: string): Promise<Attachment[]> {
-  await delay(LATENCY)
-  return mockAttachments.filter((f) => f.workspaceId === workspaceId && !!f.deletedAt)
+  return apiRequest<Attachment[]>(`/workspaces/${workspaceId}/files/deleted`)
 }
 
 export async function getFolders(workspaceId: string, projectId?: string): Promise<FileFolder[]> {
-  await delay(LATENCY)
-  return mockFolders.filter(
-    (f) => f.workspaceId === workspaceId && (projectId ? f.projectId === projectId : !f.projectId || true)
-  )
+  return apiRequest<FileFolder[]>(`/workspaces/${workspaceId}/folders`, {
+    query: projectId ? { projectId } : undefined,
+  })
 }
 
 export async function getFile(fileId: string): Promise<Attachment> {
-  await delay(LATENCY)
-  const file = mockAttachments.find((f) => f.id === fileId)
-  if (!file) throw new Error("File not found")
-  return file
+  return apiRequest<Attachment>(`/files/${fileId}`)
+}
+
+export interface UploadFileParams {
+  workspaceId: string
+  file: File
+  projectId?: string
+  taskId?: string
+  folderId?: string
+}
+
+export async function uploadFile(params: UploadFileParams): Promise<Attachment> {
+  const formData = new FormData()
+  formData.append("workspace_id", params.workspaceId)
+  formData.append("file", params.file)
+  if (params.projectId) formData.append("project_id", params.projectId)
+  if (params.taskId) formData.append("task_id", params.taskId)
+  if (params.folderId) formData.append("folder_id", params.folderId)
+  return apiUpload<Attachment>("/files/upload", formData)
+}
+
+export async function downloadFile(fileId: string, filename: string): Promise<void> {
+  await apiDownload(`/files/${fileId}/download`, filename)
 }

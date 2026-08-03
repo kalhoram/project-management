@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Activity as ActivityIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import type { Activity } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -36,7 +36,7 @@ export function ActivityFeed({ activities, className, compact }: ActivityFeedPro
   return (
     <ul className={cn("space-y-0", className)}>
       {activities.map((activity, index) => {
-        const actor = mockUsers.find((u) => u.id === activity.actorId)
+        const actor = lookupUser(activity.actorId)
         return (
           <li
             key={activity.id}

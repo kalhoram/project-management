@@ -26,7 +26,7 @@ export function GlobalCommandSearch() {
   const { commandOpen, setCommandOpen } = useUIStore()
   const { currentWorkspaceId } = useWorkspaceStore()
   const [query, setQuery] = useState("")
-  const { data, isFetching } = useGlobalSearch(query)
+  const { data, isFetching } = useGlobalSearch(currentWorkspaceId ?? "", query)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -60,7 +60,13 @@ export function GlobalCommandSearch() {
               <Search className="h-4 w-4" />
               رفتن به داشبورد
             </CommandItem>
-            <CommandItem onSelect={() => go(`/workspaces/${currentWorkspaceId}/projects/new`)}>
+            <CommandItem
+              onSelect={() =>
+                currentWorkspaceId
+                  ? go(`/workspaces/${currentWorkspaceId}/projects/new`)
+                  : go("/workspaces")
+              }
+            >
               <FolderKanban className="h-4 w-4" />
               ایجاد پروژه
             </CommandItem>

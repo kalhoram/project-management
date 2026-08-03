@@ -1,14 +1,15 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Download, FileText, Folder, Upload } from "lucide-react"
-import { toast } from "sonner"
+import { FileText, Folder } from "lucide-react"
 import { DashboardShell } from "@/components/layout/dashboard-shell"
 import { PageHeader } from "@/components/common/page-header"
 import { ExportMenu } from "@/components/common/export-menu"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { PageSkeleton } from "@/components/common/loading-skeleton"
+import { FileDownloadButton } from "@/components/features/files/file-download-button"
+import { FileUploadButton } from "@/components/features/files/file-upload-button"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -18,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useFolders, useWorkspace, useWorkspaceFiles } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { useFolders, useProjects, useWorkspace, useWorkspaceFiles } from "@/hooks/queries"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 function formatBytes(bytes: number) {
@@ -34,6 +35,9 @@ export default function WorkspaceFilesPage() {
   const workspace = useWorkspace(workspaceId)
   const files = useWorkspaceFiles(workspaceId)
   const folders = useFolders(workspaceId)
+  const projects = useProjects(workspaceId)
+
+  const projectNameById = new Map((projects.data ?? []).map((project) => [project.id, project.name]))
 
   if (workspace.isLoading || files.isLoading) {
     return <DashboardShell><PageSkeleton /></DashboardShell>
@@ -60,10 +64,7 @@ export default function WorkspaceFilesPage() {
         actions={
           <div className="flex gap-2">
             <ExportMenu entityName="فایل‌ها" />
-            <Button size="sm" onClick={() => toast.success("آپلود آغاز شد")}>
-              <Upload className="h-4 w-4" />
-              آپلود
-            </Button>
+            <FileUploadButton workspaceId={workspaceId} />
           </div>
         }
       />
@@ -84,8 +85,7 @@ export default function WorkspaceFilesPage() {
           icon={FileText}
           title="فایلی وجود ندارد"
           description="اسناد مشترک فضای کاری را آپلود کنید."
-          actionLabel="آپلود فایل"
-          onAction={() => toast.success("آپلود آغاز شد")}
+          action={<FileUploadButton workspaceId={workspaceId} label="آپلود فایل" />}
         />
       ) : (
         <div className="rounded-sm border border-border">
@@ -109,14 +109,12 @@ export default function WorkspaceFilesPage() {
                       {file.name}
                     </div>
                   </TableCell>
-                  <TableCell>{file.projectId ?? "—"}</TableCell>
+                  <TableCell>{file.projectId ? projectNameById.get(file.projectId) ?? "—" : "فضای کاری"}</TableCell>
                   <TableCell>{formatBytes(file.size)}</TableCell>
-                  <TableCell>{mockUsers.find((u) => u.id === file.uploadedById)?.name}</TableCell>
+                  <TableCell>{lookupUser(file.uploadedById)?.name ?? "—"}</TableCell>
                   <TableCell>{formatDate(file.createdAt)}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon-sm" onClick={() => toast.success("دانلود آغاز شد")}>
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    <FileDownloadButton fileId={file.id} filename={file.name} />
                   </TableCell>
                 </TableRow>
               ))}

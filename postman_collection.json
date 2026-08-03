@@ -1,0 +1,227 @@
+{
+  "info": {
+    "name": "YadBox API",
+    "description": "YadBox (یادباکس) local demo API collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ready",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/ready"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "OpenAPI",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/openapi.json"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{demo_email}}\",\n  \"password\": \"{{demo_password}}\"\n}"
+        },
+        "url": "{{api_base}}/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const data = pm.response.json();",
+              "pm.test('access token exists', function () { pm.expect(data.accessToken).to.be.a('string').and.not.empty; });",
+              "pm.environment.set('access_token', data.accessToken);",
+              "if (data.refreshToken) { pm.environment.set('refresh_token', data.refreshToken); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Current User / Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": "{{api_base}}/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const user = pm.response.json();",
+              "pm.test('authenticated user email', function () { pm.expect(user.email).to.eql(pm.environment.get('demo_email')); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Me Without Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{api_base}}/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 401 or 403', function () { pm.expect(pm.response.code).to.be.oneOf([401, 403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Me Invalid Token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid.token.value"
+          }
+        ],
+        "url": "{{api_base}}/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 401 or 403', function () { pm.expect(pm.response.code).to.be.oneOf([401, 403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login Wrong Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{demo_email}}\",\n  \"password\": \"wrong-password-xyz\"\n}"
+        },
+        "url": "{{api_base}}/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 400 or 401', function () { pm.expect(pm.response.code).to.be.oneOf([400, 401]); });",
+              "const data = pm.response.json();",
+              "pm.test('no access token', function () { pm.expect(data.accessToken).to.be.undefined; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+        },
+        "url": "{{api_base}}/auth/refresh"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const data = pm.response.json();",
+              "pm.test('new access token exists', function () { pm.expect(data.accessToken).to.be.a('string').and.not.empty; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-# Team Blue
+# YadBox (یادباکس)
 
 ## Overview
-Team Blue is a multi-product design system built for team collaboration and developer tooling. Its structured, systematic approach uses a deliberate palette of blues, teals, and purples to differentiate product areas while maintaining a unified feel. The design language emphasizes clarity, density, and efficient navigation across interconnected tools.
+YadBox is the visual design system for the یادباکس project-management platform. Its structured, systematic approach uses a deliberate palette of blues, teals, and purples to differentiate product areas while maintaining a unified feel. The design language emphasizes clarity, density, and efficient navigation across interconnected tools.
 
 ## Colors
 - **Primary** (#0052CC): Primary CTAs, links, selected states, primary navigation — Atlassian Blue
@@ -28,7 +28,7 @@ Inter provides exceptional legibility at small sizes, critical for dense project
 Type scale: 11px (overline/breadcrumb), 12px (caption/badge), 14px (body/default), 16px (h5/card title), 20px (h4/section), 24px (h3/page subtitle), 29px (h2/page title), 35px (h1/hero).
 
 ## Elevation
-Team Blue uses subtle, layered shadows to organize complex multi-panel layouts. Level 0 is flat on the surface. Level 1 uses `0 1px 1px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for cards and raised elements. Level 2 uses `0 4px 8px -2px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for dropdowns and inline dialogs. Level 3 uses `0 8px 16px -4px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for modals and large overlays. The characteristic double-shadow approach (ambient + direct) creates a natural, layered depth. Drag-and-drop items in motion use Level 3 with a slight rotation.
+YadBox uses subtle, layered shadows to organize complex multi-panel layouts. Level 0 is flat on the surface. Level 1 uses `0 1px 1px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for cards and raised elements. Level 2 uses `0 4px 8px -2px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for dropdowns and inline dialogs. Level 3 uses `0 8px 16px -4px rgba(9,30,66,0.25), 0 0 1px rgba(9,30,66,0.31)` for modals and large overlays. The characteristic double-shadow approach (ambient + direct) creates a natural, layered depth. Drag-and-drop items in motion use Level 3 with a slight rotation.
 
 ## Components
 - **Buttons**: Primary — #0052CC background, white text, 500 weight, 32px height (compact) / 36px (default) / 40px (tall), 12px horizontal padding, 3px border-radius. Hover #0747A6. Secondary — #F4F5F7 background, #172B4D text. Subtle — transparent, #6B778C text, hover #F4F5F7 bg. Danger — #DE350B background, white text. Link-style — no background, #0052CC text, underline on hover. All buttons 14px Inter 500.

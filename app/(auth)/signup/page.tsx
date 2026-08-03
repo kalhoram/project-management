@@ -59,7 +59,7 @@ export default function SignupPage() {
         email: data.email,
         password: data.password,
       })
-      toast.success("حساب ایجاد شد! لطفاً ایمیل خود را تأیید کنید.")
+      toast.success("حساب ایجاد شد. ایمیل تأیید ارسال شد — صندوق ورودی را بررسی کنید.")
       router.push("/verify-email?email=" + encodeURIComponent(data.email))
     } catch (err) {
       const message = err instanceof Error ? err.message : "ثبت‌نام ناموفق بود"

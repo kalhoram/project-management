@@ -9,7 +9,8 @@ import { PageSkeleton } from "@/components/common/loading-skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useCurrentUser, useMentions } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 
 function initials(name: string) {
@@ -18,7 +19,8 @@ function initials(name: string) {
 
 export default function MentionsPage() {
   const user = useCurrentUser()
-  const mentions = useMentions(user.data?.id ?? "")
+  const { currentWorkspaceId } = useWorkspaceStore()
+  const mentions = useMentions(currentWorkspaceId ?? "", user.data?.id ?? "")
 
   if (user.isLoading || mentions.isLoading) {
     return <DashboardShell><PageSkeleton /></DashboardShell>
@@ -37,12 +39,14 @@ export default function MentionsPage() {
   return (
     <DashboardShell>
       <PageHeader title="منشن‌ها" description="نظراتی که در آن‌ها منشن شده‌اید" />
-      {items.length === 0 ? (
+      {!currentWorkspaceId ? (
+        <EmptyState title="فضای کاری انتخاب نشده" description="برای مشاهده منشن‌ها یک فضای کاری انتخاب کنید." />
+      ) : items.length === 0 ? (
         <EmptyState icon={AtSign} title="منشنی وجود ندارد" description="وقتی کسی شما را @منشن کند، اینجا نمایش داده می‌شود." />
       ) : (
         <ul className="space-y-3">
           {items.map((comment) => {
-            const author = mockUsers.find((u) => u.id === comment.authorId)
+            const author = lookupUser(comment.authorId)
             return (
               <li key={comment.id} className="rounded-sm border border-border bg-card p-4">
                 <div className="flex items-start gap-3">
@@ -51,7 +55,7 @@ export default function MentionsPage() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{author?.name}</span>
+                      <span className="text-sm font-medium">{author?.name ?? "ناشناس"}</span>
                       <Badge variant="purple">شما را منشن کرد</Badge>
                       <span className="text-xs text-muted-foreground">
                         {formatDate(comment.createdAt, "MMM d, yyyy h:mm a")}

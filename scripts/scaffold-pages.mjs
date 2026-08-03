@@ -1,5 +1,5 @@
 /**
- * Generates route pages for Team Blue PM SaaS.
+ * Generates route pages for YadBox PM SaaS.
  * Run: node scripts/scaffold-pages.mjs
  */
 import fs from "node:fs"
@@ -66,8 +66,8 @@ export default function Page() {
 
 // ---------- Auth pages ----------
 const authPages = [
-  ["app/(auth)/login/page.tsx", "Login", "Sign in to your Team Blue account"],
-  ["app/(auth)/signup/page.tsx", "Sign up", "Create your Team Blue account"],
+  ["app/(auth)/login/page.tsx", "Login", "Sign in to your YadBox account"],
+  ["app/(auth)/signup/page.tsx", "Sign up", "Create your YadBox account"],
   ["app/(auth)/forgot-password/page.tsx", "Forgot password", "We'll email you a reset link"],
   ["app/(auth)/reset-password/page.tsx", "Reset password", "Choose a new password"],
   ["app/(auth)/verify-email/page.tsx", "Verify email", "Confirm your email address"],
@@ -170,7 +170,7 @@ const routes = [
 
 const nestedShellRoutes = [
   // Billing (layout provides DashboardShell)
-  ["app/billing/plans/page.tsx", "Plans", "Compare Team Blue plans"],
+  ["app/billing/plans/page.tsx", "Plans", "Compare YadBox plans"],
   ["app/billing/select-plan/page.tsx", "Select plan", "Choose billing cycle"],
   ["app/billing/payment/page.tsx", "Payment", "Checkout and billing details"],
   ["app/billing/result/page.tsx", "Payment result", "Status of your payment"],

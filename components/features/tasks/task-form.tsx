@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2 } from "lucide-react"
@@ -18,7 +18,7 @@ import {
 import { SettingsSection } from "@/components/common/settings-section"
 import type { Label as TaskLabel, TaskPriority, TaskStatus } from "@/lib/types"
 import { TASK_STATUS_LABELS, PRIORITY_LABELS } from "@/lib/constants"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 
 const taskSchema = z.object({
   title: z.string().min(2, "عنوان باید حداقل ۲ کاراکتر باشد"),
@@ -77,6 +77,7 @@ export function TaskForm({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -100,9 +101,9 @@ export function TaskForm({
   const assigneeId = watch("assigneeId")
   const selectedLabels = watch("labelIds") ?? []
 
-  const members = memberIds.length
-    ? mockUsers.filter((u) => memberIds.includes(u.id))
-    : mockUsers
+  const members = memberIds
+    .map((id) => lookupUser(id))
+    .filter((user): user is NonNullable<typeof user> => !!user)
 
   function toggleLabel(labelId: string) {
     const next = selectedLabels.includes(labelId)
@@ -112,12 +113,34 @@ export function TaskForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void handleSubmit(onSubmit)(event)
+      }}
+      className="space-y-6"
+      noValidate
+      method="post"
+      action="#"
+    >
       <SettingsSection title="جزئیات" description="اطلاعات اصلی وظیفه">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">عنوان</Label>
-            <Input id="title" {...register("title")} placeholder="چه کاری باید انجام شود؟" />
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="title"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  placeholder="چه کاری باید انجام شود؟"
+                />
+              )}
+            />
             {errors.title ? (
               <p className="text-sm text-destructive">{errors.title.message}</p>
             ) : null}

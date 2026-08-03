@@ -17,37 +17,49 @@ import { Card, CardContent } from "@/components/ui/card"
 import { clearOnboardingDraft, getOnboardingDraft } from "@/lib/onboarding-storage"
 import { cn } from "@/lib/utils"
 
-const CHECKLIST = [
-  {
-    id: "project",
-    icon: FolderPlus,
-    title: "اولین پروژه خود را بسازید",
-    description: "پروژه‌ای از قالب انتخاب‌شده راه‌اندازی کنید",
-    href: "/workspaces/ws-1/projects/new",
-    cta: "ایجاد پروژه",
-  },
-  {
-    id: "task",
-    icon: ListTodo,
-    title: "اولین وظیفه را اضافه کنید",
-    description: "کار را به وظایف قابل پیگیری تقسیم کنید و مسئول تعیین کنید",
-    href: "/workspaces/ws-1/projects/proj-1/tasks/new",
-    cta: "افزودن وظیفه",
-  },
-  {
-    id: "invite",
-    icon: UserPlus,
-    title: "یک هم‌تیمی دعوت کنید",
-    description: "همکاری با کل تیم نتیجه بهتری می‌دهد",
-    href: "/workspaces/ws-1/members",
-    cta: "دعوت اعضا",
-  },
-]
+import { useWorkspaceStore } from "@/stores/ui-store"
+
+function buildChecklist(workspaceId: string | null, projectId: string | null) {
+  const ws = workspaceId ?? ""
+  return [
+    {
+      id: "project",
+      icon: FolderPlus,
+      title: "اولین پروژه خود را بسازید",
+      description: "پروژه‌ای از قالب انتخاب‌شده راه‌اندازی کنید",
+      href: ws ? `/workspaces/${ws}/projects/new` : "/workspaces",
+      cta: "ایجاد پروژه",
+    },
+    {
+      id: "task",
+      icon: ListTodo,
+      title: "اولین وظیفه را اضافه کنید",
+      description: "کار را به وظایف قابل پیگیری تقسیم کنید و مسئول تعیین کنید",
+      href:
+        ws && projectId
+          ? `/workspaces/${ws}/projects/${projectId}/tasks/new`
+          : ws
+            ? `/workspaces/${ws}/projects`
+            : "/workspaces",
+      cta: "افزودن وظیفه",
+    },
+    {
+      id: "invite",
+      icon: UserPlus,
+      title: "یک هم‌تیمی دعوت کنید",
+      description: "همکاری با کل تیم نتیجه بهتری می‌دهد",
+      href: ws ? `/workspaces/${ws}/members` : "/workspaces",
+      cta: "دعوت اعضا",
+    },
+  ]
+}
 
 export default function OnboardingGuidePage() {
   const router = useRouter()
+  const { currentWorkspaceId, currentProjectId } = useWorkspaceStore()
   const draft = getOnboardingDraft()
   const [completed, setCompleted] = useState<Set<string>>(new Set())
+  const CHECKLIST = buildChecklist(currentWorkspaceId, currentProjectId)
 
   function toggleComplete(id: string) {
     setCompleted((prev) => {

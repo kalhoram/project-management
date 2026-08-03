@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useWorkspaces } from "@/hooks/queries"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import * as workspaceService from "@/lib/api/workspace.service"
 import { formatDate } from "@/lib/utils"
 
 const workspaceStatusLabels: Record<string, string> = {
@@ -35,6 +37,7 @@ const workspaceStatusLabels: Record<string, string> = {
 
 export default function WorkspacesPage() {
   const router = useRouter()
+  const { setCurrentWorkspaceId } = useWorkspaceStore()
   const { data: workspaces, isLoading, isError, refetch } = useWorkspaces()
   const [search, setSearch] = useState("")
   const [createOpen, setCreateOpen] = useState(false)
@@ -59,12 +62,19 @@ export default function WorkspacesPage() {
       return
     }
     setCreating(true)
-    await new Promise((r) => setTimeout(r, 500))
-    toast.success("فضای کاری ایجاد شد", { description: `"${newName}" آماده استفاده است.` })
-    setCreating(false)
-    setCreateOpen(false)
-    setNewName("")
-    router.push("/workspaces/ws-1")
+    try {
+      const created = await workspaceService.createWorkspace({ name: newName.trim() })
+      toast.success("فضای کاری ایجاد شد", { description: `"${created.name}" آماده استفاده است.` })
+      setCreateOpen(false)
+      setNewName("")
+      setCurrentWorkspaceId(created.id)
+      await refetch()
+      router.push(`/workspaces/${created.id}`)
+    } catch {
+      toast.error("ایجاد فضای کاری ممکن نشد")
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (

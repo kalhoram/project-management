@@ -42,9 +42,17 @@ function VerifyEmailContent() {
 
   async function handleResend() {
     try {
-      await resend.mutateAsync(email)
-      setResent(true)
-      toast.success("ایمیل تأیید ارسال شد")
+      const result = await resend.mutateAsync(email)
+      if (result.emailDispatched) {
+        setResent(true)
+        const modeHint =
+          result.deliveryMode === "console"
+            ? " (حالت توسعه: لینک در لاگ سرور بک‌اند ثبت شد)"
+            : ""
+        toast.success(`ایمیل تأیید ارسال شد${modeHint}`)
+      } else {
+        toast.message("در صورت وجود حساب، ایمیل تأیید ارسال می‌شود.")
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "ارسال مجدد ایمیل ممکن نشد")
     }

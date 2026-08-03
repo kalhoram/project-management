@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useGlobalSearch } from "@/hooks/queries"
+import { useGlobalSearch, useCurrentUser } from "@/hooks/queries"
+import { useWorkspaceStore } from "@/stores/ui-store"
+import { lookupUser } from "@/lib/user-registry"
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/constants"
-import { mockUsers } from "@/lib/mock/data"
 import { formatDate } from "@/lib/utils"
 
 function formatBytes(bytes: number) {
@@ -33,13 +34,15 @@ function formatBytes(bytes: number) {
 }
 
 export default function SearchPage() {
+  const { data: user } = useCurrentUser()
+  const { currentWorkspaceId } = useWorkspaceStore()
   const [query, setQuery] = useState("")
-  const [submitted, setSubmitted] = useState("task")
+  const [submitted, setSubmitted] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
   const [assigneeOnly, setAssigneeOnly] = useState(false)
 
-  const search = useGlobalSearch(submitted.length > 0 ? submitted : query)
+  const search = useGlobalSearch(currentWorkspaceId ?? "", submitted.length > 0 ? submitted : query)
 
   const results = search.data
 
@@ -48,10 +51,10 @@ export default function SearchPage() {
     return results.tasks.filter((t) => {
       if (statusFilter !== "all" && t.status !== statusFilter) return false
       if (priorityFilter !== "all" && t.priority !== priorityFilter) return false
-      if (assigneeOnly && t.assigneeId !== "user-1") return false
+      if (assigneeOnly && user?.id && t.assigneeId !== user.id) return false
       return true
     })
-  }, [results?.tasks, statusFilter, priorityFilter, assigneeOnly])
+  }, [results?.tasks, statusFilter, priorityFilter, assigneeOnly, user?.id])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -61,6 +64,14 @@ export default function SearchPage() {
   return (
     <DashboardShell>
       <PageHeader title="جستجو" description="وظایف، پروژه‌ها، افراد، فایل‌ها و نظرات را پیدا کنید" />
+
+      {!currentWorkspaceId ? (
+        <EmptyState
+          icon={Search}
+          title="فضای کاری انتخاب نشده"
+          description="برای جستجو ابتدا یک فضای کاری از نوار بالا انتخاب کنید."
+        />
+      ) : (
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="w-full shrink-0 space-y-4 lg:w-64">
@@ -194,7 +205,7 @@ export default function SearchPage() {
                       <div>
                         <p className="text-sm font-medium">{file.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {mockUsers.find((u) => u.id === file.uploadedById)?.name} · {formatDate(file.createdAt)}
+                          {lookupUser(file.uploadedById)?.name ?? "کاربر"} · {formatDate(file.createdAt)}
                         </p>
                       </div>
                     </div>
@@ -208,7 +219,7 @@ export default function SearchPage() {
                   <div key={comment.id} className="rounded-sm border border-border bg-card px-4 py-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <MessageSquare className="h-3.5 w-3.5" />
-                      {mockUsers.find((u) => u.id === comment.authorId)?.name} · {formatDate(comment.createdAt)}
+                      {lookupUser(comment.authorId)?.name ?? "کاربر"} · {formatDate(comment.createdAt)}
                     </div>
                     <p className="mt-1 text-sm">{comment.body}</p>
                   </div>
@@ -218,6 +229,7 @@ export default function SearchPage() {
           )}
         </div>
       </div>
+      )}
     </DashboardShell>
   )
 }

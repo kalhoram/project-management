@@ -13,6 +13,7 @@ import {
 } from "@/components/features/projects/project-form"
 import {
   useCreateProject,
+  useCurrentUser,
   useProjectCategories,
   useWorkspace,
 } from "@/hooks/queries"
@@ -25,8 +26,14 @@ export default function NewProjectPage() {
   const workspace = useWorkspace(workspaceId)
   const categories = useProjectCategories(workspaceId)
   const createProject = useCreateProject()
+  const currentUser = useCurrentUser()
 
   async function handleSubmit(values: ProjectFormValues) {
+    const userId = currentUser.data?.id
+    if (!userId) {
+      toast.error("برای ایجاد پروژه باید وارد شوید")
+      return
+    }
     try {
       const project = await createProject.mutateAsync({
         workspaceId,
@@ -39,8 +46,7 @@ export default function NewProjectPage() {
           templateId: values.templateId,
           startDate: values.startDate || undefined,
           dueDate: values.dueDate || undefined,
-          ownerId: "user-1",
-          memberIds: ["user-1"],
+          memberIds: [userId],
         },
       })
       toast.success("پروژه ایجاد شد")

@@ -24,7 +24,9 @@ import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { useTask, useTaskComments, useLabels, useProject, useWorkspace } from "@/hooks/queries"
+import { useTask, useTaskComments, useLabels, useProject, useWorkspace, useTasks, useProjectActivities, useCurrentUser } from "@/hooks/queries"
+import * as fileService from "@/lib/api/file.service"
+import { useQuery } from "@tanstack/react-query"
 import {
   formatFileSize,
   getChecklistProgress,
@@ -32,7 +34,6 @@ import {
   isTaskOverdue,
 } from "@/lib/task-utils"
 import { formatDate } from "@/lib/utils"
-import { mockAttachments, mockActivities, mockTasks } from "@/lib/mock/data"
 import { cn } from "@/lib/utils"
 
 function initials(name: string) {
@@ -54,7 +55,15 @@ export default function TaskDetailsPage() {
   const project = useProject(projectId)
   const task = useTask(taskId)
   const comments = useTaskComments(taskId)
-  const labelsQuery = useLabels()
+  const labelsQuery = useLabels(workspaceId)
+  const projectTasks = useTasks(projectId)
+  const activitiesQuery = useProjectActivities(workspaceId, projectId)
+  const currentUser = useCurrentUser()
+  const filesQuery = useQuery({
+    queryKey: ["task-files", taskId],
+    queryFn: () => fileService.getTaskFiles(taskId),
+    enabled: !!taskId,
+  })
 
   const isLoading =
     workspace.isLoading || project.isLoading || task.isLoading || comments.isLoading
@@ -87,15 +96,16 @@ export default function TaskDetailsPage() {
   const reporter = getUserById(t.reporterId)
   const taskLabels = (labelsQuery.data ?? []).filter((l) => t.labelIds.includes(l.id))
   const checklist = getChecklistProgress(t)
-  const attachments = mockAttachments.filter((a) => a.taskId === t.id && !a.deletedAt)
-  const activities = mockActivities.filter(
+  const attachments = filesQuery.data ?? []
+  const activities = (activitiesQuery.data ?? []).filter(
     (a) => a.entityType === "task" && a.entityId === t.id
   )
+  const projectTaskList = projectTasks.data ?? []
   const blockedBy = t.blockedByIds
-    .map((id) => mockTasks.find((task) => task.id === id))
+    .map((id) => projectTaskList.find((task) => task.id === id))
     .filter(Boolean)
   const blocking = t.blockingIds
-    .map((id) => mockTasks.find((task) => task.id === id))
+    .map((id) => projectTaskList.find((task) => task.id === id))
     .filter(Boolean)
 
   return (
@@ -196,7 +206,10 @@ export default function TaskDetailsPage() {
               <CardTitle className="text-base">نظرات</CardTitle>
             </CardHeader>
             <CardContent>
-              <CommentThread comments={comments.data ?? []} />
+              <CommentThread
+                comments={comments.data ?? []}
+                currentUserId={currentUser.data?.id}
+              />
             </CardContent>
           </Card>
 

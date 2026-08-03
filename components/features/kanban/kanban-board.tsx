@@ -59,8 +59,9 @@ export function KanbanBoard({
   columns: initialColumns,
   tasks: initialTasks,
   labels,
-  reporterId = "user-1",
+  reporterId,
 }: KanbanBoardProps) {
+  void reporterId
   const [columns, setColumns] = useState(initialColumns)
   const [tasks, setTasks] = useState(initialTasks)
   const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS)
@@ -204,7 +205,7 @@ export function KanbanBoard({
       title,
       status: column.status,
       priority: "medium",
-      reporterId,
+      reporterId: reporterId ?? "",
       labelIds: [],
       progress: 0,
       columnId,

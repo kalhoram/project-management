@@ -47,6 +47,21 @@ export default function ProjectReportsPage() {
     )
   }
 
+  if (statusReport.isError || progressTrend.isError) {
+    return (
+      <DashboardShell>
+        <ErrorState
+          message="بارگذاری گزارش‌های پروژه ممکن نشد."
+          onRetry={() => {
+            statusReport.refetch()
+            progressTrend.refetch()
+            memberPerf.refetch()
+          }}
+        />
+      </DashboardShell>
+    )
+  }
+
   const p = project.data
   const statusData = (statusReport.data ?? []).map((item, i) => ({
     name: TASK_STATUS_LABELS[item.status] ?? item.status,
@@ -55,8 +70,8 @@ export default function ProjectReportsPage() {
   }))
 
   const memberData = (memberPerf.data ?? []).slice(0, 5).map((m) => ({
-    name: m.name.split(" ")[0],
-    value: m.completed,
+    name: (m.name ?? "عضو").split(" ")[0] ?? m.name,
+    value: m.completed ?? 0,
   }))
 
   return (

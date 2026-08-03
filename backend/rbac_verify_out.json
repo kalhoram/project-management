@@ -1,0 +1,300 @@
+{
+  "base": "http://127.0.0.1:8000",
+  "summary": {
+    "pass": 30,
+    "fail": 0
+  },
+  "checks": [
+    {
+      "name": "owner GET fake workspace",
+      "status": 404,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET real workspace (member)",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET fake workspace",
+      "status": 404,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner GET project",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner GET fake project",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET project (workspace member)",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest POST create project",
+      "status": 403,
+      "expected": [
+        403
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "member POST create project",
+      "status": 200,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": "members have projects.create"
+    },
+    {
+      "name": "owner GET task",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner GET fake task",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest PATCH task",
+      "status": 403,
+      "expected": [
+        403
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "viewer PATCH task",
+      "status": 403,
+      "expected": [
+        403
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "member PATCH task",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "unauthenticated PATCH task",
+      "status": 401,
+      "expected": [
+        401
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest POST create task",
+      "status": 403,
+      "expected": [
+        403
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner POST saved filter",
+      "status": 201,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET owner private saved filter",
+      "status": 403,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest PATCH owner saved filter",
+      "status": 403,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner DELETE saved filter cleanup",
+      "status": 200,
+      "expected": [
+        200,
+        204
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner list saved filters fake workspace",
+      "status": 404,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner upload file",
+      "status": 200,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET file in shared workspace",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": "workspace member read"
+    },
+    {
+      "name": "viewer GET file in shared workspace",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner GET fake file id",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "system admin GET workspace",
+      "status": 200,
+      "expected": [
+        200,
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": "depends on admin membership"
+    },
+    {
+      "name": "owner POST create workspace B",
+      "status": 200,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner POST project in workspace B",
+      "status": 200,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "owner POST task in workspace B",
+      "status": 200,
+      "expected": [
+        200,
+        201
+      ],
+      "verdict": "PASS",
+      "note": ""
+    },
+    {
+      "name": "guest GET task in workspace B",
+      "status": 404,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": "workspaceB=da946a13-5147-4a7d-bcaf-effc50ab5058"
+    },
+    {
+      "name": "guest PATCH task in workspace B",
+      "status": 404,
+      "expected": [
+        403,
+        404
+      ],
+      "verdict": "PASS",
+      "note": "taskB=4ea6909a-7237-4b2e-aa9b-6653feb0cc98"
+    }
+  ],
+  "multiWorkspace": {
+    "workspaceBId": "da946a13-5147-4a7d-bcaf-effc50ab5058",
+    "taskBId": "4ea6909a-7237-4b2e-aa9b-6653feb0cc98",
+    "verified": true
+  }
+}

@@ -77,7 +77,8 @@ const memberStatusLabels: Record<string, string> = {
   inactive: "غیرفعال",
 }
 
-function initials(name: string) {
+function initials(name?: string) {
+  if (!name?.trim()) return "?"
   return name
     .split(" ")
     .map((n) => n[0])
@@ -101,11 +102,12 @@ export default function WorkspaceMembersPage() {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [search, setSearch] = useState("")
 
-  const filtered = (members.data ?? []).filter(
-    (m) =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.email.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = (members.data ?? []).filter((m) => {
+    const name = m.name ?? ""
+    const email = m.email ?? ""
+    const query = search.toLowerCase()
+    return name.toLowerCase().includes(query) || email.toLowerCase().includes(query)
+  })
 
   function handleInvite() {
     if (!inviteEmail.includes("@")) {

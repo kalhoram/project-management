@@ -7,8 +7,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDate(date: string | Date, formatStr = "d MMMM yyyy") {
-  return format(typeof date === "string" ? new Date(date) : date, formatStr, {
+export function formatDate(date: string | Date | undefined | null, formatStr = "d MMMM yyyy") {
+  if (!date) return "—"
+  const parsed = typeof date === "string" ? new Date(date) : date
+  if (Number.isNaN(parsed.getTime())) return "—"
+  return format(parsed, formatStr, {
     locale: faIR,
   })
 }

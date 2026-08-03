@@ -11,7 +11,14 @@ npm run dev
 
 [http://localhost:3000](http://localhost:3000) را در مرورگر باز کنید.
 
-**ورود آزمایشی (۵ نقش):** رمز همه `demo`
+**ورود اصلی (مالک کامل):**
+
+| فیلد | مقدار |
+|------|--------|
+| کاربر | `admin` |
+| رمز | `123/321` |
+
+**ورود آزمایشی نقش‌ها:** رمز `demo`
 
 | نقش | ایمیل |
 |------|--------|
@@ -20,6 +27,14 @@ npm run dev
 | عضو | `member@yadbox.app` |
 | مهمان | `guest@yadbox.app` |
 | بیننده | `viewer@yadbox.app` |
+
+**اکانت دمو محلی (فقط برای توسعه):**
+
+| فیلد | مقدار |
+|------|--------|
+| ایمیل | `demo@yadbox.app` |
+| رمز | `Demo1234!` |
+| نام | `کاربر دمو یادباکس` |
 
 در صفحه `/login` می‌توانید با یک کلیک وارد هر اکانت شوید. منو و دکمه‌ها بر اساس نقش فیلتر می‌شوند.
 
@@ -40,7 +55,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Demo credentials
 
-Password for all: `demo`
+Primary owner account:
+
+| Field | Value |
+|------|--------|
+| User | `admin` |
+| Password | `123/321` |
+
+Role demos (password `demo`):
 
 | Role | Email |
 |------|--------|
@@ -49,6 +71,14 @@ Password for all: `demo`
 | Member | `member@yadbox.app` |
 | Guest | `guest@yadbox.app` |
 | Viewer | `viewer@yadbox.app` |
+
+Local demo account (development only):
+
+| Field | Value |
+|------|--------|
+| Email | `demo@yadbox.app` |
+| Password | `Demo1234!` |
+| Name | `کاربر دمو یادباکس` |
 
 Click any account on `/login` to sign in. Sidebar and actions are filtered by role permissions.
 

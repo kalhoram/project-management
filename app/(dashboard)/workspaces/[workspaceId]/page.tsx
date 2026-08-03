@@ -34,7 +34,7 @@ import {
   useWorkspace,
   useWorkspaceTasks,
 } from "@/hooks/queries"
-import { mockUsers } from "@/lib/mock/data"
+import { lookupUser } from "@/lib/user-registry"
 import { formatDate } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 import { faIR } from "date-fns/locale"
@@ -70,7 +70,8 @@ export default function WorkspaceDashboardPage() {
   const isError = workspace.isError || metrics.isError
 
   const myTasks = useMemo(() => {
-    const userId = currentUser.data?.id ?? "user-1"
+    const userId = currentUser.data?.id
+    if (!userId) return []
     return (tasks.data ?? [])
       .filter((t) => t.assigneeId === userId && t.status !== "done" && t.status !== "cancelled")
       .slice(0, 5)
@@ -228,7 +229,7 @@ export default function WorkspaceDashboardPage() {
               ) : (
                 <div className="divide-y divide-border">
                   {(activities.data ?? []).slice(0, 6).map((act) => {
-                    const actor = mockUsers.find((u) => u.id === act.actorId)
+                    const actor = lookupUser(act.actorId)
                     return (
                       <div key={act.id} className="flex items-start gap-3 px-4 py-3">
                         <Avatar className="h-7 w-7">

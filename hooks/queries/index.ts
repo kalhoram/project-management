@@ -13,11 +13,16 @@ import * as adminService from "@/lib/api/admin.service"
 import * as authService from "@/lib/api/auth.service"
 import * as advancedService from "@/lib/api/advanced.service"
 
+import { getStoredTokens } from "@/lib/auth-tokens"
+import { useAuth } from "@/components/auth-provider"
+
 export function useCurrentUser() {
   return useQuery({
     queryKey: ["currentUser"],
     queryFn: authService.getCurrentUser,
     staleTime: 0,
+    retry: false,
+    enabled: typeof window !== "undefined" && !!getStoredTokens(),
   })
 }
 
@@ -28,17 +33,15 @@ export function useLogin() {
       authService.login(email, password),
     onSuccess: (user) => {
       queryClient.setQueryData(["currentUser"], user)
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] })
     },
   })
 }
 
 export function useLogout() {
-  const queryClient = useQueryClient()
+  const { signOut } = useAuth()
   return useMutation({
-    mutationFn: () => authService.logout(),
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["currentUser"] })
-    },
+    mutationFn: () => signOut(),
   })
 }
 
@@ -87,7 +90,11 @@ export function useConnectGoogle() {
 }
 
 export function useWorkspaces() {
-  return useQuery({ queryKey: ["workspaces"], queryFn: workspaceService.getWorkspaces })
+  return useQuery({
+    queryKey: ["workspaces"],
+    queryFn: workspaceService.getWorkspaces,
+    enabled: typeof window !== "undefined" && !!getStoredTokens(),
+  })
 }
 
 export function useWorkspace(workspaceId: string) {
@@ -182,13 +189,15 @@ export function useActivities(workspaceId?: string) {
   return useQuery({
     queryKey: ["activities", workspaceId ?? "all"],
     queryFn: () => notificationService.getActivities(workspaceId),
+    enabled: Boolean(workspaceId),
   })
 }
 
-export function useDashboardMetrics(workspaceId?: string) {
+export function useDashboardMetrics(workspaceId: string) {
   return useQuery({
-    queryKey: ["dashboard-metrics", workspaceId ?? "global"],
+    queryKey: ["dashboard-metrics", workspaceId],
     queryFn: () => reportService.getDashboardMetrics(workspaceId),
+    enabled: !!workspaceId,
   })
 }
 
@@ -220,11 +229,29 @@ export function useWorkspaceFiles(workspaceId: string) {
   })
 }
 
-export function useGlobalSearch(query: string) {
+export function useUploadFile(workspaceId: string, projectId?: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) =>
+      fileService.uploadFile({
+        workspaceId,
+        projectId,
+        file,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace-files", workspaceId] })
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: ["project-files", projectId] })
+      }
+    },
+  })
+}
+
+export function useGlobalSearch(workspaceId: string, query: string) {
   return useQuery({
-    queryKey: ["search", query],
-    queryFn: () => searchService.globalSearch(query),
-    enabled: query.length > 0,
+    queryKey: ["search", workspaceId, query],
+    queryFn: () => searchService.globalSearch(workspaceId, query),
+    enabled: !!workspaceId && query.length > 0,
   })
 }
 
@@ -360,37 +387,43 @@ export function useEstimation(workspaceId: string) {
   })
 }
 
-export function useComments() {
-  return useQuery({ queryKey: ["comments"], queryFn: advancedService.getComments })
+export function useComments(workspaceId: string) {
+  return useQuery({
+    queryKey: ["comments", workspaceId],
+    queryFn: () => advancedService.getComments(workspaceId),
+    enabled: !!workspaceId,
+  })
 }
 
-export function useMentions(userId: string) {
+export function useMentions(workspaceId: string, userId: string) {
   return useQuery({
-    queryKey: ["mentions", userId],
-    queryFn: () => advancedService.getMentions(userId),
+    queryKey: ["mentions", workspaceId, userId],
+    queryFn: () => advancedService.getMentions(workspaceId, userId),
+    enabled: !!workspaceId && !!userId,
+  })
+}
+
+export function useMyTasks(userId: string, workspaceId?: string) {
+  return useQuery({
+    queryKey: ["my-tasks", userId, workspaceId ?? "all"],
+    queryFn: () => advancedService.getMyTasks(userId, workspaceId),
     enabled: !!userId,
   })
 }
 
-export function useMyTasks(userId: string) {
+export function useOverdueTasks(userId?: string, workspaceId?: string) {
   return useQuery({
-    queryKey: ["my-tasks", userId],
-    queryFn: () => advancedService.getMyTasks(userId),
-    enabled: !!userId,
+    queryKey: ["overdue-tasks", userId ?? "all", workspaceId ?? "all"],
+    queryFn: () => advancedService.getOverdueTasks(userId, workspaceId),
+    enabled: Boolean(userId),
   })
 }
 
-export function useOverdueTasks(userId?: string) {
+export function useUpcomingDeadlines(userId?: string, workspaceId?: string) {
   return useQuery({
-    queryKey: ["overdue-tasks", userId ?? "all"],
-    queryFn: () => advancedService.getOverdueTasks(userId),
-  })
-}
-
-export function useUpcomingDeadlines(userId?: string) {
-  return useQuery({
-    queryKey: ["upcoming-deadlines", userId ?? "all"],
-    queryFn: () => advancedService.getUpcomingDeadlines(userId),
+    queryKey: ["upcoming-deadlines", userId ?? "all", workspaceId ?? "all"],
+    queryFn: () => advancedService.getUpcomingDeadlines(userId, undefined, workspaceId),
+    enabled: Boolean(userId),
   })
 }
 
@@ -509,8 +542,12 @@ export function useTaskComments(taskId: string) {
   })
 }
 
-export function useLabels() {
-  return useQuery({ queryKey: ["labels"], queryFn: taskService.getLabels })
+export function useLabels(workspaceId: string) {
+  return useQuery({
+    queryKey: ["labels", workspaceId],
+    queryFn: () => taskService.getLabels(workspaceId),
+    enabled: !!workspaceId,
+  })
 }
 
 export function useCreateTask() {
