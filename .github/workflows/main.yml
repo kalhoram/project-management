@@ -42,7 +42,7 @@ jobs:
             ${{ env.IMAGE_PREFIX }}-backend:latest
             ${{ env.IMAGE_PREFIX }}-backend:${{ github.sha }}
 
-            - name: Build and push frontend image
+      - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: .
