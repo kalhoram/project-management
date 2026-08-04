@@ -33,10 +33,15 @@ export default function WorkspaceTeamsPage() {
   if (teams.isError) {
     return (
       <DashboardShell>
-        <ErrorState message="بارگذاری تیم‌ها ممکن نشد." onRetry={() => teams.refetch()} />
+        <ErrorState
+          message="بارگذاری تیم‌ها ممکن نشد."
+          onRetry={() => teams.refetch()}
+        />
       </DashboardShell>
     )
   }
+
+  const teamItems = teams.data ?? []
 
   return (
     <DashboardShell>
@@ -45,7 +50,10 @@ export default function WorkspaceTeamsPage() {
         description="سازمان‌دهی اعضا در تیم‌ها و واحدها"
         breadcrumbs={[
           { label: "فضاهای کاری", href: "/workspaces" },
-          { label: workspace.data?.name ?? "فضای کاری", href: `/workspaces/${workspaceId}` },
+          {
+            label: workspace.data?.name ?? "فضای کاری",
+            href: `/workspaces/${workspaceId}`,
+          },
           { label: "تیم‌ها" },
         ]}
         actions={
@@ -55,7 +63,7 @@ export default function WorkspaceTeamsPage() {
         }
       />
 
-      {(teams.data ?? []).length === 0 ? (
+      {teamItems.length === 0 ? (
         <EmptyState
           icon={Users}
           title="هنوز تیمی وجود ندارد"
@@ -65,8 +73,10 @@ export default function WorkspaceTeamsPage() {
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {(teams.data ?? []).map((team) => {
-            const lead = lookupUser(team.leadId)
+          {teamItems.map((team) => {
+            const lead = team.leadId ? lookupUser(team.leadId) : null
+            const memberIds = team.memberIds ?? []
+
             return (
               <Card key={team.id}>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -77,23 +87,29 @@ export default function WorkspaceTeamsPage() {
                     />
                     <CardTitle className="text-base">{team.name}</CardTitle>
                   </div>
+
                   {team.department ? (
                     <Badge variant="secondary">{team.department}</Badge>
                   ) : null}
                 </CardHeader>
+
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
                     {team.description ?? "بدون توضیحات"}
                   </p>
-                  {lead ? (
-                    <p className="text-xs text-muted-foreground">
-                      سرپرست: <span className="font-medium text-foreground">{lead.name}</span>
-                    </p>
-                  ) : null}
+
+                  <p className="text-xs text-muted-foreground">
+                    سرپرست:{" "}
+                    <span className="font-medium text-foreground">
+                      {lead?.name ?? "بدون سرپرست"}
+                    </span>
+                  </p>
+
                   <div className="flex items-center justify-between">
-                    <MemberAvatarGroup userIds={team.memberIds} />
+                    <MemberAvatarGroup userIds={memberIds} />
+
                     <span className="text-xs text-muted-foreground">
-                      {team.memberIds.length} عضو
+                      {memberIds.length} عضو
                     </span>
                   </div>
                 </CardContent>
