@@ -35,7 +35,11 @@ export default function RoadmapPage() {
   const roadmap = useRoadmap(workspaceId)
 
   if (workspace.isLoading || roadmap.isLoading) {
-    return <DashboardShell><PageSkeleton /></DashboardShell>
+    return (
+      <DashboardShell>
+        <PageSkeleton />
+      </DashboardShell>
+    )
   }
 
   if (roadmap.isError) {
@@ -57,30 +61,48 @@ export default function RoadmapPage() {
       />
 
       {items.length === 0 ? (
-        <EmptyState icon={Map} title="موردی در نقشه راه نیست" description="ابتکارات را برنامه‌ریزی و انتشارها را پیگیری کنید." />
+        <EmptyState
+          icon={Map}
+          title="موردی در نقشه راه نیست"
+          description="ابتکارات را برنامه‌ریزی و انتشارها را پیگیری کنید."
+        />
       ) : (
         <div className="space-y-3">
           {items.map((item) => {
-            const owner = lookupUser(item.ownerId)
+            const owner = item.ownerId ? lookupUser(item.ownerId) : null
+
             return (
               <Card key={item.id}>
                 <CardContent className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h5 className="font-semibold">{item.title}</h5>
-                      <Badge variant={statusVariant[item.status]}>{roadmapStatusLabels[item.status]}</Badge>
+                      <Badge variant={statusVariant[item.status]}>
+                        {roadmapStatusLabels[item.status]}
+                      </Badge>
                       {item.release ? <Badge variant="outline">{item.release}</Badge> : null}
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
+
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {item.initiative} · {owner?.name} · {formatDate(item.startDate)} – {formatDate(item.endDate)}
+                      {item.initiative} · {owner?.name ?? "بدون مسئول"} ·{" "}
+                      {formatDate(item.startDate)} – {formatDate(item.endDate)}
                     </p>
                   </div>
+
                   <div className="hidden h-2 w-32 shrink-0 rounded-full bg-muted sm:block">
                     <div
                       className="h-full rounded-full bg-primary"
                       style={{
-                        width: item.status === "shipped" ? "100%" : item.status === "in_progress" ? "60%" : "20%",
+                        width:
+                          item.status === "shipped"
+                            ? "100%"
+                            : item.status === "in_progress"
+                              ? "60%"
+                              : "20%",
                       }}
                     />
                   </div>
